@@ -3,8 +3,33 @@ from openai import OpenAI
 from .models import Encounter, NoteTemplate
 import json
 from pathlib import Path
+import boto3
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+
+def get_parameter(name, default=None, with_decryption=True):
+    """
+    Read config/secrets from AWS Systems Manager Parameter Store.
+    Local environment variable fallback is optional for development.
+    """
+    env_name = name.split("/")[-1]
+
+    if os.environ.get(env_name):
+        return os.environ.get(env_name)
+
+    try:
+        ssm = boto3.client("ssm", region_name="us-east-1")
+        response = ssm.get_parameter(
+            Name=name,
+            WithDecryption=with_decryption,
+        )
+        return response["Parameter"]["Value"]
+    except Exception:
+        if default is not None:
+            return default
+        raise
+
+client = OpenAI(api_key=get_parameter("/kyronmedical/OPENAI_API_KEY"))
 
 
 def call_llm(encounter_id, template_id):

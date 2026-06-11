@@ -12,6 +12,30 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
+import boto3
+
+
+def get_parameter(name, default=None, with_decryption=True):
+    """
+    Read config/secrets from AWS Systems Manager Parameter Store.
+    Local environment variable fallback is optional for development.
+    """
+    env_name = name.split("/")[-1]
+
+    if os.environ.get(env_name):
+        return os.environ.get(env_name)
+
+    try:
+        ssm = boto3.client("ssm", region_name="us-east-1")
+        response = ssm.get_parameter(
+            Name=name,
+            WithDecryption=with_decryption,
+        )
+        return response["Parameter"]["Value"]
+    except Exception:
+        if default is not None:
+            return default
+        raise
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,7 +45,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-$0@nw7+*9!1m4(s!u%0c%@ro1wjw%r2lo_dxw8!7#mwdesme^)'
+# SECRET_KEY = 'django-insecure-$0@nw7+*9!1m4(s!u%0c%@ro1wjw%r2lo_dxw8!7#mwdesme^)'
+SECRET_KEY = get_parameter("/kyronmedical/DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -97,14 +122,11 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_NAME", "kyronmedical_db"),
-        "USER": os.environ.get("DB_USER", "app_admin"),
-        "PASSWORD": os.environ.get("DB_PASSWORD"),
-        "HOST": os.environ.get(
-            "DB_HOST",
-            "kyronmedical-0.cgdcoyyumbwi.us-east-1.rds.amazonaws.com"
-        ),
-        "PORT": os.environ.get("DB_PORT", "5432"),
+        "NAME": get_parameter("/kyronmedical/DB_NAME"),
+        "USER": get_parameter("/kyronmedical/DB_USER"),
+        "PASSWORD": get_parameter("/kyronmedical/DB_PASSWORD"),
+        "HOST": get_parameter("/kyronmedical/DB_HOST"),
+        "PORT": get_parameter("/kyronmedical/DB_PORT", "5432"),
         "CONN_MAX_AGE": 60,
         "OPTIONS": {
             "sslmode": "require",
