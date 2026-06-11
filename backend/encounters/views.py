@@ -1,6 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.db import transaction
+from django.http import JsonResponse
 from django.contrib.auth import authenticate, login, logout
+from django.http import StreamingHttpResponse, HttpResponseNotAllowed
+
+import json
 
 from .models import UserProfile, Encounter, NoteTemplate, Patient, NoteVersion
 from .llm import call_llm
@@ -61,7 +67,6 @@ def provider_workspace(request):
                 Encounter.objects.select_related(
                     "provider",
                     "patient",
-                    "template",
                 ),
                 id=encounter_id,
                 provider=request.user,
@@ -126,7 +131,6 @@ def provider_workspace(request):
             provider=request.user
         ).select_related(
             "patient",
-            "template",
         ).order_by("-updated_at")
 
         return render(request, "provider_workspace.html", {
@@ -141,7 +145,6 @@ def save_raw_input(request, encounter_id):
         Encounter.objects.select_related(
             "provider",
             "patient",
-            "template",
         ),
         id=encounter_id,
         provider=request.user,
@@ -173,97 +176,122 @@ def save_raw_input(request, encounter_id):
 
 @login_required
 def generate_note(request, encounter_id):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
     encounter = get_object_or_404(
         Encounter.objects.select_related(
             "provider",
             "patient",
-            "template",
         ),
         id=encounter_id,
         provider=request.user,
     )
 
-    if request.method == "POST":
-        raw_text = request.POST.get("raw_text", "")
-        template_id = request.POST.get("template_id")
+    template_id = request.POST.get("template_id")
 
-        # Save latest raw input first
-        encounter.raw_input = raw_text
+    def stream_response():
+        try:
+            for chunk in call_llm(encounter.id, template_id):
+                data = json.dumps({
+                    "delta": chunk,
+                })
 
-        # Generate SOAP note from raw input
-        generated_note = call_llm(encounter_id, template_id)
+                yield f"data: {data}\n\n"
 
-        # Save generated note into encounter
-        encounter.current_note = generated_note
-        encounter.save()
+            yield "event: done\ndata: {}\n\n"
 
-        # Create new note version
-        latest_version = encounter.versions.order_by("-version_number").first()
+        except Exception as e:
+            error_data = json.dumps({
+                "error": str(e),
+            })
 
-        if latest_version:
-            next_version_number = latest_version.version_number + 1
-        else:
-            next_version_number = 1
+            yield f"event: error\ndata: {error_data}\n\n"
 
-        NoteVersion.objects.create(
-            encounter=encounter,
-            version_number=next_version_number,
-            note_text=generated_note,
-            saved_by=request.user,
-        )
+    response = StreamingHttpResponse(
+        stream_response(),
+        content_type="text/event-stream",
+    )
 
-    provider = encounter.provider
-    patient = encounter.patient
+    response["Cache-Control"] = "no-cache"
+    response["X-Accel-Buffering"] = "no"
 
-    note_versions = encounter.versions.all().order_by("-saved_at")
-    latest_note_version = note_versions.first()
-
-    note_templates = NoteTemplate.objects.filter(is_active=True).order_by("name")
-
-    return render(request, "encounter.html", {
-        "provider": provider,
-        "patient": patient,
-        "encounter": encounter,
-        "note_versions": note_versions,
-        "latest_note_version": latest_note_version,
-        "note_templates": note_templates,
-    })
-
+    return response
 
 
 @login_required
+@require_POST
 def save_note_version(request, encounter_id):
     encounter = get_object_or_404(
         Encounter.objects.select_related(
             "provider",
             "patient",
-            "template",
         ),
         id=encounter_id,
         provider=request.user,
     )
 
-    if request.method == "POST":
-        note_text = request.POST.get("note_text", "")
 
-        # Update the encounter's current note
-        encounter.current_note = note_text
-        encounter.save()
+    note_text = request.POST.get("note_text", "")
 
-        # Create a new saved version
-        latest_version = encounter.versions.order_by("-version_number").first()
-
-        if latest_version:
-            next_version_number = latest_version.version_number + 1
-        else:
-            next_version_number = 1
-
-        NoteVersion.objects.create(
-            encounter=encounter,
-            version_number=next_version_number,
-            note_text=note_text,
-            saved_by=request.user,
+    with transaction.atomic():
+        # Get latest version first
+        latest_version = (
+            encounter.versions
+            .order_by("-version_number")
+            .first()
         )
+
+        # Delete older draft notes.
+        # After this, only the latest draft is allowed to remain.
+        if latest_version:
+            encounter.versions.filter(
+                status="draft"
+            ).exclude(
+                id=latest_version.id
+            ).delete()
+
+
+        # Re-fetch latest version after cleanup
+        latest_version = (
+            encounter.versions
+            .order_by("-version_number")
+            .first()
+        )
+
+        if latest_version and latest_version.status == "draft":
+            # Latest note is an unsaved draft.
+            # Manual save should overwrite it and finalize it.
+            latest_version.note_text = note_text
+            latest_version.status = "finalized"
+            latest_version.saved_by = request.user
+            latest_version.save(
+                update_fields=[
+                    "note_text",
+                    "status",
+                    "saved_by",
+                    "saved_at",
+                ]
+            )
+        else:
+            # Latest note is finalized, or there are no previous versions.
+            # Create a new finalized version.
+            if latest_version:
+                next_version_number = latest_version.version_number + 1
+            else:
+                next_version_number = 1
+
+            NoteVersion.objects.create(
+                encounter=encounter,
+                version_number=next_version_number,
+                note_text=note_text,
+                status="finalized",
+                saved_by=request.user,
+            )
+
+        encounter.status = "finalized"
+        encounter.save(update_fields=["status", "updated_at"])
+
 
     note_versions = encounter.versions.all().order_by("-saved_at")
     latest_note_version = note_versions.first()
@@ -276,6 +304,70 @@ def save_note_version(request, encounter_id):
         "note_versions": note_versions,
         "latest_note_version": latest_note_version,
         "note_templates": note_templates,
+    })
+
+
+@login_required
+@require_POST
+def autosave_note_draft(request, encounter_id):
+    encounter = get_object_or_404(
+        Encounter.objects.select_related(
+            "provider",
+            "patient",
+        ),
+        id=encounter_id,
+        provider=request.user,
+    )
+
+    note_text = request.POST.get("note_text", "")
+
+    with transaction.atomic():
+        latest_version = (
+            encounter.versions
+            .order_by("-version_number")
+            .first()
+        )
+
+        if latest_version and latest_version.status == "draft":
+            # Latest version is already a draft.
+            # Autosave only updates the text.
+            latest_version.note_text = note_text
+            latest_version.saved_by = request.user
+            latest_version.save(
+                update_fields=[
+                    "note_text",
+                    "saved_by",
+                    "saved_at",
+                ]
+            )
+
+            draft_version = latest_version
+
+        else:
+            # Latest version is finalized, or there is no version yet.
+            # Autosave creates a new draft.
+            if latest_version:
+                next_version_number = latest_version.version_number + 1
+            else:
+                next_version_number = 1
+
+            draft_version = NoteVersion.objects.create(
+                encounter=encounter,
+                version_number=next_version_number,
+                note_text=note_text,
+                status="draft",
+                saved_by=request.user,
+            )
+
+        # the encounter itself is still in draft mode while autosaving.
+        encounter.status = "draft"
+        encounter.save(update_fields=["status", "updated_at"])
+
+    return JsonResponse({
+        "ok": True,
+        "version_number": draft_version.version_number,
+        "status": draft_version.status,
+        "saved_at": draft_version.saved_at.strftime("%Y-%m-%d %H:%M:%S"),
     })
 
 

@@ -20,5 +20,10 @@ urlpatterns = [
         "<int:encounter_id>/save-note-version/",
         views.save_note_version,
         name="save_note_version",
-    )
+    ),
+    path(
+        "encounters/<int:encounter_id>/autosave-note-draft/",
+        views.autosave_note_draft,
+        name="autosave_note_draft",
+    ),
 ]

@@ -10,7 +10,6 @@ def call_llm(encounter_id, template_id):
     encounter = Encounter.objects.select_related(
         "patient",
         "provider",
-        "template",
     ).get(id=encounter_id)
 
     template = NoteTemplate.objects.get(id=template_id, is_active=True)
@@ -105,3 +104,104 @@ def call_llm(encounter_id, template_id):
     )
 
     return response.output_text
+
+
+
+def build_prompt(encounter_id, template_id):
+    encounter = (
+        Encounter.objects
+        .select_related("patient", "provider")
+        .get(id=encounter_id)
+    )
+
+    template = NoteTemplate.objects.get(id=template_id, is_active=True)
+    patient = encounter.patient
+
+    previous_encounters = (
+        Encounter.objects
+        .filter(patient=patient)
+        .exclude(id=encounter.id)
+        .order_by("updated_at")
+    )
+
+    previous_blocks = []
+
+    for prev in previous_encounters:
+        latest_note_version = (
+            prev.versions
+            .order_by("-saved_at")
+            .first()
+        )
+
+        previous_blocks.append(f"""
+            Encounter ID: {prev.id}
+            Updated At: {prev.updated_at}
+
+            Previous Raw Input:
+            {prev.raw_input or "No raw input available."}
+
+            Latest Saved Note:
+            {latest_note_version.note_text if latest_note_version else "No saved note available."}
+            """)
+
+    previous_history = "\n\n---\n\n".join(previous_blocks)
+
+    if not previous_history:
+        previous_history = "No previous encounter history available."
+
+    prompt = f"""
+            You are an AI clinical scribe.
+
+            Generate a structured SOAP note for the current encounter.
+
+            Patient Information:
+            - First Name: {patient.first_name}
+            - Last Name: {patient.last_name}
+            - Date of Birth: {patient.date_of_birth}
+
+            1. Current Raw Input:
+            {encounter.raw_input or "No current raw input provided."}
+
+            2. Previous Patient History, sorted by time:
+            {previous_history}
+
+            3. Specific Instruction / Prompt Template:
+            Template Name: {template.name}
+            Encounter Type: {template.encounter_type}
+
+            {template.prompt_text}
+
+            4. Required Output Format:
+
+            The output must be a SOAP note with these sections:
+
+            Subjective:
+            Objective:
+            Assessment:
+            Plan:
+
+            The Assessment section must include at least one suggested ICD-10 code and description.
+
+            Rules:
+            - Do not invent facts.
+            - If information is missing, say it was not provided.
+            - Use previous history only as supporting context.
+            - Keep the note clinically concise and professional.
+            """
+
+    return prompt
+
+
+
+def stream_llm(encounter_id, template_id):
+    prompt = build_prompt(encounter_id, template_id)
+
+    stream = client.responses.create(
+        model="gpt-5.4-mini",
+        input=prompt,
+        stream=True,
+    )
+
+    for event in stream:
+        if getattr(event, "type", None) == "response.output_text.delta":
+            yield event.delta

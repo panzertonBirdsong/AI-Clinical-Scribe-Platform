@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import User
 
 
@@ -51,15 +52,7 @@ class Encounter(models.Model):
     provider = models.ForeignKey(User, on_delete=models.CASCADE)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
 
-    template = models.ForeignKey(
-        NoteTemplate,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-    )
-
     raw_input = models.TextField(blank=True)
-    current_note = models.TextField(blank=True)
 
     status = models.CharField(
         max_length=20,
@@ -75,6 +68,11 @@ class Encounter(models.Model):
 
 
 class NoteVersion(models.Model):
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("finalized", "Finalized"),
+    ]
+
     encounter = models.ForeignKey(
         Encounter,
         on_delete=models.CASCADE,
@@ -84,16 +82,41 @@ class NoteVersion(models.Model):
     version_number = models.PositiveIntegerField()
     note_text = models.TextField()
 
-    saved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    saved_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="draft",
+    )
+
+    saved_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+
+    saved_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ("encounter", "version_number")
         ordering = ["-version_number"]
 
-    def __str__(self):
-        return f"Encounter {self.encounter.id} - Version {self.version_number}"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["encounter", "version_number"],
+                name="unique_note_version_per_encounter",
+            ),
+            models.UniqueConstraint(
+                fields=["encounter"],
+                condition=Q(status="draft"),
+                name="unique_draft_note_per_encounter",
+            ),
+        ]
 
+    def __str__(self):
+        return (
+            f"Encounter {self.encounter.id} - "
+            f"Version {self.version_number} - "
+            f"{self.status}"
+        )
 
 class ICD10Code(models.Model):
     code = models.CharField(max_length=20, unique=True)
