@@ -1,0 +1,1202 @@
+[
+  {
+    "code": "E11.00",
+    "description": "Type 2 diabetes mellitus with hyperosmolarity without nonketotic hyperglycemic-hyperosmolar coma (NKHHC)"
+  },
+  {
+    "code": "E11.01",
+    "description": "Type 2 diabetes mellitus with hyperosmolarity with coma"
+  },
+  {
+    "code": "E11.10",
+    "description": "Type 2 diabetes mellitus with ketoacidosis without coma"
+  },
+  {
+    "code": "E11.11",
+    "description": "Type 2 diabetes mellitus with ketoacidosis with coma"
+  },
+  {
+    "code": "E11.21",
+    "description": "Type 2 diabetes mellitus with diabetic nephropathy"
+  },
+  {
+    "code": "E11.22",
+    "description": "Type 2 diabetes mellitus with diabetic chronic kidney disease"
+  },
+  {
+    "code": "E11.29",
+    "description": "Type 2 diabetes mellitus with other diabetic kidney complication"
+  },
+  {
+    "code": "E11.311",
+    "description": "Type 2 diabetes mellitus with unspecified diabetic retinopathy with macular edema"
+  },
+  {
+    "code": "E11.319",
+    "description": "Type 2 diabetes mellitus with unspecified diabetic retinopathy without macular edema"
+  },
+  {
+    "code": "E11.3211",
+    "description": "Type 2 diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema, right eye"
+  },
+  {
+    "code": "E11.3212",
+    "description": "Type 2 diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema, left eye"
+  },
+  {
+    "code": "E11.3213",
+    "description": "Type 2 diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema, bilateral"
+  },
+  {
+    "code": "E11.3219",
+    "description": "Type 2 diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema, unspecified eye"
+  },
+  {
+    "code": "E11.3291",
+    "description": "Type 2 diabetes mellitus with mild nonproliferative diabetic retinopathy without macular edema, right eye"
+  },
+  {
+    "code": "E11.3292",
+    "description": "Type 2 diabetes mellitus with mild nonproliferative diabetic retinopathy without macular edema, left eye"
+  },
+  {
+    "code": "E11.3293",
+    "description": "Type 2 diabetes mellitus with mild nonproliferative diabetic retinopathy without macular edema, bilateral"
+  },
+  {
+    "code": "E11.3299",
+    "description": "Type 2 diabetes mellitus with mild nonproliferative diabetic retinopathy without macular edema, unspecified eye"
+  },
+  {
+    "code": "E11.3311",
+    "description": "Type 2 diabetes mellitus with moderate nonproliferative diabetic retinopathy with macular edema, right eye"
+  },
+  {
+    "code": "E11.3312",
+    "description": "Type 2 diabetes mellitus with moderate nonproliferative diabetic retinopathy with macular edema, left eye"
+  },
+  {
+    "code": "E11.3313",
+    "description": "Type 2 diabetes mellitus with moderate nonproliferative diabetic retinopathy with macular edema, bilateral"
+  },
+  {
+    "code": "E11.3319",
+    "description": "Type 2 diabetes mellitus with moderate nonproliferative diabetic retinopathy with macular edema, unspecified eye"
+  },
+  {
+    "code": "E11.3391",
+    "description": "Type 2 diabetes mellitus with moderate nonproliferative diabetic retinopathy without macular edema, right eye"
+  },
+  {
+    "code": "E11.3392",
+    "description": "Type 2 diabetes mellitus with moderate nonproliferative diabetic retinopathy without macular edema, left eye"
+  },
+  {
+    "code": "E11.3393",
+    "description": "Type 2 diabetes mellitus with moderate nonproliferative diabetic retinopathy without macular edema, bilateral"
+  },
+  {
+    "code": "E11.3399",
+    "description": "Type 2 diabetes mellitus with moderate nonproliferative diabetic retinopathy without macular edema, unspecified eye"
+  },
+  {
+    "code": "E11.3411",
+    "description": "Type 2 diabetes mellitus with severe nonproliferative diabetic retinopathy with macular edema, right eye"
+  },
+  {
+    "code": "E11.3412",
+    "description": "Type 2 diabetes mellitus with severe nonproliferative diabetic retinopathy with macular edema, left eye"
+  },
+  {
+    "code": "E11.3413",
+    "description": "Type 2 diabetes mellitus with severe nonproliferative diabetic retinopathy with macular edema, bilateral"
+  },
+  {
+    "code": "E11.3419",
+    "description": "Type 2 diabetes mellitus with severe nonproliferative diabetic retinopathy with macular edema, unspecified eye"
+  },
+  {
+    "code": "E11.3491",
+    "description": "Type 2 diabetes mellitus with severe nonproliferative diabetic retinopathy without macular edema, right eye"
+  },
+  {
+    "code": "E11.3492",
+    "description": "Type 2 diabetes mellitus with severe nonproliferative diabetic retinopathy without macular edema, left eye"
+  },
+  {
+    "code": "E11.3493",
+    "description": "Type 2 diabetes mellitus with severe nonproliferative diabetic retinopathy without macular edema, bilateral"
+  },
+  {
+    "code": "E11.3499",
+    "description": "Type 2 diabetes mellitus with severe nonproliferative diabetic retinopathy without macular edema, unspecified eye"
+  },
+  {
+    "code": "E11.3511",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy with macular edema, right eye"
+  },
+  {
+    "code": "E11.3512",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy with macular edema, left eye"
+  },
+  {
+    "code": "E11.3513",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy with macular edema, bilateral"
+  },
+  {
+    "code": "E11.3519",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy with macular edema, unspecified eye"
+  },
+  {
+    "code": "E11.3521",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment involving the macula, right eye"
+  },
+  {
+    "code": "E11.3522",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment involving the macula, left eye"
+  },
+  {
+    "code": "E11.3523",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment involving the macula, bilateral"
+  },
+  {
+    "code": "E11.3529",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment involving the macula, unspecified eye"
+  },
+  {
+    "code": "E11.3531",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, right eye"
+  },
+  {
+    "code": "E11.3532",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, left eye"
+  },
+  {
+    "code": "E11.3533",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, bilateral"
+  },
+  {
+    "code": "E11.3539",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy with traction retinal detachment not involving the macula, unspecified eye"
+  },
+  {
+    "code": "E11.3541",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, right eye"
+  },
+  {
+    "code": "E11.3542",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, left eye"
+  },
+  {
+    "code": "E11.3543",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, bilateral"
+  },
+  {
+    "code": "E11.3549",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy with combined traction retinal detachment and rhegmatogenous retinal detachment, unspecified eye"
+  },
+  {
+    "code": "E11.3551",
+    "description": "Type 2 diabetes mellitus with stable proliferative diabetic retinopathy, right eye"
+  },
+  {
+    "code": "E11.3552",
+    "description": "Type 2 diabetes mellitus with stable proliferative diabetic retinopathy, left eye"
+  },
+  {
+    "code": "E11.3553",
+    "description": "Type 2 diabetes mellitus with stable proliferative diabetic retinopathy, bilateral"
+  },
+  {
+    "code": "E11.3559",
+    "description": "Type 2 diabetes mellitus with stable proliferative diabetic retinopathy, unspecified eye"
+  },
+  {
+    "code": "E11.3591",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy without macular edema, right eye"
+  },
+  {
+    "code": "E11.3592",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy without macular edema, left eye"
+  },
+  {
+    "code": "E11.3593",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy without macular edema, bilateral"
+  },
+  {
+    "code": "E11.3599",
+    "description": "Type 2 diabetes mellitus with proliferative diabetic retinopathy without macular edema, unspecified eye"
+  },
+  {
+    "code": "E11.36",
+    "description": "Type 2 diabetes mellitus with diabetic cataract"
+  },
+  {
+    "code": "E11.37X1",
+    "description": "Type 2 diabetes mellitus with diabetic macular edema, resolved following treatment, right eye"
+  },
+  {
+    "code": "E11.37X2",
+    "description": "Type 2 diabetes mellitus with diabetic macular edema, resolved following treatment, left eye"
+  },
+  {
+    "code": "E11.37X3",
+    "description": "Type 2 diabetes mellitus with diabetic macular edema, resolved following treatment, bilateral"
+  },
+  {
+    "code": "E11.37X9",
+    "description": "Type 2 diabetes mellitus with diabetic macular edema, resolved following treatment, unspecified eye"
+  },
+  {
+    "code": "E11.39",
+    "description": "Type 2 diabetes mellitus with other diabetic ophthalmic complication"
+  },
+  {
+    "code": "E11.40",
+    "description": "Type 2 diabetes mellitus with diabetic neuropathy, unspecified"
+  },
+  {
+    "code": "E11.41",
+    "description": "Type 2 diabetes mellitus with diabetic mononeuropathy"
+  },
+  {
+    "code": "E11.42",
+    "description": "Type 2 diabetes mellitus with diabetic polyneuropathy"
+  },
+  {
+    "code": "E11.43",
+    "description": "Type 2 diabetes mellitus with diabetic autonomic (poly)neuropathy"
+  },
+  {
+    "code": "E11.44",
+    "description": "Type 2 diabetes mellitus with diabetic amyotrophy"
+  },
+  {
+    "code": "E11.49",
+    "description": "Type 2 diabetes mellitus with other diabetic neurological complication"
+  },
+  {
+    "code": "E11.51",
+    "description": "Type 2 diabetes mellitus with diabetic peripheral angiopathy without gangrene"
+  },
+  {
+    "code": "E11.52",
+    "description": "Type 2 diabetes mellitus with diabetic peripheral angiopathy with gangrene"
+  },
+  {
+    "code": "E11.59",
+    "description": "Type 2 diabetes mellitus with other circulatory complications"
+  },
+  {
+    "code": "E11.610",
+    "description": "Type 2 diabetes mellitus with diabetic neuropathic arthropathy"
+  },
+  {
+    "code": "E11.618",
+    "description": "Type 2 diabetes mellitus with other diabetic arthropathy"
+  },
+  {
+    "code": "E11.620",
+    "description": "Type 2 diabetes mellitus with diabetic dermatitis"
+  },
+  {
+    "code": "E11.621",
+    "description": "Type 2 diabetes mellitus with foot ulcer"
+  },
+  {
+    "code": "E11.622",
+    "description": "Type 2 diabetes mellitus with other skin ulcer"
+  },
+  {
+    "code": "E11.628",
+    "description": "Type 2 diabetes mellitus with other skin complications"
+  },
+  {
+    "code": "E11.630",
+    "description": "Type 2 diabetes mellitus with periodontal disease"
+  },
+  {
+    "code": "E11.638",
+    "description": "Type 2 diabetes mellitus with other oral complications"
+  },
+  {
+    "code": "E11.641",
+    "description": "Type 2 diabetes mellitus with hypoglycemia with coma"
+  },
+  {
+    "code": "E11.649",
+    "description": "Type 2 diabetes mellitus with hypoglycemia without coma"
+  },
+  {
+    "code": "E11.65",
+    "description": "Type 2 diabetes mellitus with hyperglycemia"
+  },
+  {
+    "code": "E11.69",
+    "description": "Type 2 diabetes mellitus with other specified complication"
+  },
+  {
+    "code": "E11.8",
+    "description": "Type 2 diabetes mellitus with unspecified complications"
+  },
+  {
+    "code": "E11.9",
+    "description": "Type 2 diabetes mellitus without complications"
+  },
+  {
+    "code": "E11.A",
+    "description": "Type 2 diabetes mellitus without complications in remission"
+  },
+  {
+    "code": "E78.00",
+    "description": "Pure hypercholesterolemia, unspecified"
+  },
+  {
+    "code": "E78.010",
+    "description": "Homozygous familial hypercholesterolemia [HoFH]"
+  },
+  {
+    "code": "E78.011",
+    "description": "Heterozygous familial hypercholesterolemia [HeFH]"
+  },
+  {
+    "code": "E78.019",
+    "description": "Familial hypercholesterolemia, unspecified"
+  },
+  {
+    "code": "E78.1",
+    "description": "Pure hyperglyceridemia"
+  },
+  {
+    "code": "E78.2",
+    "description": "Mixed hyperlipidemia"
+  },
+  {
+    "code": "E78.3",
+    "description": "Hyperchylomicronemia"
+  },
+  {
+    "code": "E78.41",
+    "description": "Elevated Lipoprotein(a)"
+  },
+  {
+    "code": "E78.49",
+    "description": "Other hyperlipidemia"
+  },
+  {
+    "code": "E78.5",
+    "description": "Hyperlipidemia, unspecified"
+  },
+  {
+    "code": "E78.6",
+    "description": "Lipoprotein deficiency"
+  },
+  {
+    "code": "E78.70",
+    "description": "Disorder of bile acid and cholesterol metabolism, unspecified"
+  },
+  {
+    "code": "E78.71",
+    "description": "Barth syndrome"
+  },
+  {
+    "code": "E78.72",
+    "description": "Smith-Lemli-Opitz syndrome"
+  },
+  {
+    "code": "E78.79",
+    "description": "Other disorders of bile acid and cholesterol metabolism"
+  },
+  {
+    "code": "E78.81",
+    "description": "Lipoid dermatoarthritis"
+  },
+  {
+    "code": "E78.89",
+    "description": "Other lipoprotein metabolism disorders"
+  },
+  {
+    "code": "E78.9",
+    "description": "Disorder of lipoprotein metabolism, unspecified"
+  },
+  {
+    "code": "F32.0",
+    "description": "Major depressive disorder, single episode, mild"
+  },
+  {
+    "code": "F32.1",
+    "description": "Major depressive disorder, single episode, moderate"
+  },
+  {
+    "code": "F32.2",
+    "description": "Major depressive disorder, single episode, severe without psychotic features"
+  },
+  {
+    "code": "F32.3",
+    "description": "Major depressive disorder, single episode, severe with psychotic features"
+  },
+  {
+    "code": "F32.4",
+    "description": "Major depressive disorder, single episode, in partial remission"
+  },
+  {
+    "code": "F32.5",
+    "description": "Major depressive disorder, single episode, in full remission"
+  },
+  {
+    "code": "F32.81",
+    "description": "Premenstrual dysphoric disorder"
+  },
+  {
+    "code": "F32.89",
+    "description": "Other specified depressive episodes"
+  },
+  {
+    "code": "F32.9",
+    "description": "Major depressive disorder, single episode, unspecified"
+  },
+  {
+    "code": "F32.A",
+    "description": "Depression, unspecified"
+  },
+  {
+    "code": "F33.0",
+    "description": "Major depressive disorder, recurrent, mild"
+  },
+  {
+    "code": "F33.1",
+    "description": "Major depressive disorder, recurrent, moderate"
+  },
+  {
+    "code": "F33.2",
+    "description": "Major depressive disorder, recurrent severe without psychotic features"
+  },
+  {
+    "code": "F33.3",
+    "description": "Major depressive disorder, recurrent, severe with psychotic symptoms"
+  },
+  {
+    "code": "F33.40",
+    "description": "Major depressive disorder, recurrent, in remission, unspecified"
+  },
+  {
+    "code": "F33.41",
+    "description": "Major depressive disorder, recurrent, in partial remission"
+  },
+  {
+    "code": "F33.42",
+    "description": "Major depressive disorder, recurrent, in full remission"
+  },
+  {
+    "code": "F33.8",
+    "description": "Other recurrent depressive disorders"
+  },
+  {
+    "code": "F33.9",
+    "description": "Major depressive disorder, recurrent, unspecified"
+  },
+  {
+    "code": "F41.0",
+    "description": "Panic disorder [episodic paroxysmal anxiety]"
+  },
+  {
+    "code": "F41.1",
+    "description": "Generalized anxiety disorder"
+  },
+  {
+    "code": "F41.3",
+    "description": "Other mixed anxiety disorders"
+  },
+  {
+    "code": "F41.8",
+    "description": "Other specified anxiety disorders"
+  },
+  {
+    "code": "F41.9",
+    "description": "Anxiety disorder, unspecified"
+  },
+  {
+    "code": "G43.001",
+    "description": "Migraine without aura, not intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.009",
+    "description": "Migraine without aura, not intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.011",
+    "description": "Migraine without aura, intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.019",
+    "description": "Migraine without aura, intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.101",
+    "description": "Migraine with aura, not intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.109",
+    "description": "Migraine with aura, not intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.111",
+    "description": "Migraine with aura, intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.119",
+    "description": "Migraine with aura, intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.401",
+    "description": "Hemiplegic migraine, not intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.409",
+    "description": "Hemiplegic migraine, not intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.411",
+    "description": "Hemiplegic migraine, intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.419",
+    "description": "Hemiplegic migraine, intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.501",
+    "description": "Persistent migraine aura without cerebral infarction, not intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.509",
+    "description": "Persistent migraine aura without cerebral infarction, not intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.511",
+    "description": "Persistent migraine aura without cerebral infarction, intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.519",
+    "description": "Persistent migraine aura without cerebral infarction, intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.601",
+    "description": "Persistent migraine aura with cerebral infarction, not intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.609",
+    "description": "Persistent migraine aura with cerebral infarction, not intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.611",
+    "description": "Persistent migraine aura with cerebral infarction, intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.619",
+    "description": "Persistent migraine aura with cerebral infarction, intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.701",
+    "description": "Chronic migraine without aura, not intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.709",
+    "description": "Chronic migraine without aura, not intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.711",
+    "description": "Chronic migraine without aura, intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.719",
+    "description": "Chronic migraine without aura, intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.A0",
+    "description": "Cyclical vomiting, in migraine, not intractable"
+  },
+  {
+    "code": "G43.A1",
+    "description": "Cyclical vomiting, in migraine, intractable"
+  },
+  {
+    "code": "G43.B0",
+    "description": "Ophthalmoplegic migraine, not intractable"
+  },
+  {
+    "code": "G43.B1",
+    "description": "Ophthalmoplegic migraine, intractable"
+  },
+  {
+    "code": "G43.C0",
+    "description": "Periodic headache syndromes in child or adult, not intractable"
+  },
+  {
+    "code": "G43.C1",
+    "description": "Periodic headache syndromes in child or adult, intractable"
+  },
+  {
+    "code": "G43.D0",
+    "description": "Abdominal migraine, not intractable"
+  },
+  {
+    "code": "G43.D1",
+    "description": "Abdominal migraine, intractable"
+  },
+  {
+    "code": "G43.801",
+    "description": "Other migraine, not intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.809",
+    "description": "Other migraine, not intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.811",
+    "description": "Other migraine, intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.819",
+    "description": "Other migraine, intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.821",
+    "description": "Menstrual migraine, not intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.829",
+    "description": "Menstrual migraine, not intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.831",
+    "description": "Menstrual migraine, intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.839",
+    "description": "Menstrual migraine, intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.901",
+    "description": "Migraine, unspecified, not intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.909",
+    "description": "Migraine, unspecified, not intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.911",
+    "description": "Migraine, unspecified, intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.919",
+    "description": "Migraine, unspecified, intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.E01",
+    "description": "Chronic migraine with aura, not intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.E09",
+    "description": "Chronic migraine with aura, not intractable, without status migrainosus"
+  },
+  {
+    "code": "G43.E11",
+    "description": "Chronic migraine with aura, intractable, with status migrainosus"
+  },
+  {
+    "code": "G43.E19",
+    "description": "Chronic migraine with aura, intractable, without status migrainosus"
+  },
+  {
+    "code": "G44.001",
+    "description": "Cluster headache syndrome, unspecified, intractable"
+  },
+  {
+    "code": "G44.009",
+    "description": "Cluster headache syndrome, unspecified, not intractable"
+  },
+  {
+    "code": "G44.011",
+    "description": "Episodic cluster headache, intractable"
+  },
+  {
+    "code": "G44.019",
+    "description": "Episodic cluster headache, not intractable"
+  },
+  {
+    "code": "G44.021",
+    "description": "Chronic cluster headache, intractable"
+  },
+  {
+    "code": "G44.029",
+    "description": "Chronic cluster headache, not intractable"
+  },
+  {
+    "code": "G44.031",
+    "description": "Episodic paroxysmal hemicrania, intractable"
+  },
+  {
+    "code": "G44.039",
+    "description": "Episodic paroxysmal hemicrania, not intractable"
+  },
+  {
+    "code": "G44.041",
+    "description": "Chronic paroxysmal hemicrania, intractable"
+  },
+  {
+    "code": "G44.049",
+    "description": "Chronic paroxysmal hemicrania, not intractable"
+  },
+  {
+    "code": "G44.051",
+    "description": "Short lasting unilateral neuralgiform headache with conjunctival injection and tearing (SUNCT), intractable"
+  },
+  {
+    "code": "G44.059",
+    "description": "Short lasting unilateral neuralgiform headache with conjunctival injection and tearing (SUNCT), not intractable"
+  },
+  {
+    "code": "G44.091",
+    "description": "Other trigeminal autonomic cephalgias (TAC), intractable"
+  },
+  {
+    "code": "G44.099",
+    "description": "Other trigeminal autonomic cephalgias (TAC), not intractable"
+  },
+  {
+    "code": "G44.1",
+    "description": "Vascular headache, not elsewhere classified"
+  },
+  {
+    "code": "G44.201",
+    "description": "Tension-type headache, unspecified, intractable"
+  },
+  {
+    "code": "G44.209",
+    "description": "Tension-type headache, unspecified, not intractable"
+  },
+  {
+    "code": "G44.211",
+    "description": "Episodic tension-type headache, intractable"
+  },
+  {
+    "code": "G44.219",
+    "description": "Episodic tension-type headache, not intractable"
+  },
+  {
+    "code": "G44.221",
+    "description": "Chronic tension-type headache, intractable"
+  },
+  {
+    "code": "G44.229",
+    "description": "Chronic tension-type headache, not intractable"
+  },
+  {
+    "code": "G44.301",
+    "description": "Post-traumatic headache, unspecified, intractable"
+  },
+  {
+    "code": "G44.309",
+    "description": "Post-traumatic headache, unspecified, not intractable"
+  },
+  {
+    "code": "G44.311",
+    "description": "Acute post-traumatic headache, intractable"
+  },
+  {
+    "code": "G44.319",
+    "description": "Acute post-traumatic headache, not intractable"
+  },
+  {
+    "code": "G44.321",
+    "description": "Chronic post-traumatic headache, intractable"
+  },
+  {
+    "code": "G44.329",
+    "description": "Chronic post-traumatic headache, not intractable"
+  },
+  {
+    "code": "G44.40",
+    "description": "Drug-induced headache, not elsewhere classified, not intractable"
+  },
+  {
+    "code": "G44.41",
+    "description": "Drug-induced headache, not elsewhere classified, intractable"
+  },
+  {
+    "code": "G44.51",
+    "description": "Hemicrania continua"
+  },
+  {
+    "code": "G44.52",
+    "description": "New daily persistent headache (NDPH)"
+  },
+  {
+    "code": "G44.53",
+    "description": "Primary thunderclap headache"
+  },
+  {
+    "code": "G44.59",
+    "description": "Other complicated headache syndrome"
+  },
+  {
+    "code": "G44.81",
+    "description": "Hypnic headache"
+  },
+  {
+    "code": "G44.82",
+    "description": "Headache associated with sexual activity"
+  },
+  {
+    "code": "G44.83",
+    "description": "Primary cough headache"
+  },
+  {
+    "code": "G44.84",
+    "description": "Primary exertional headache"
+  },
+  {
+    "code": "G44.85",
+    "description": "Primary stabbing headache"
+  },
+  {
+    "code": "G44.86",
+    "description": "Cervicogenic headache"
+  },
+  {
+    "code": "G44.89",
+    "description": "Other headache syndrome"
+  },
+  {
+    "code": "I10",
+    "description": "Essential (primary) hypertension"
+  },
+  {
+    "code": "J00",
+    "description": "Acute nasopharyngitis [common cold]"
+  },
+  {
+    "code": "J01.00",
+    "description": "Acute maxillary sinusitis, unspecified"
+  },
+  {
+    "code": "J01.01",
+    "description": "Acute recurrent maxillary sinusitis"
+  },
+  {
+    "code": "J01.10",
+    "description": "Acute frontal sinusitis, unspecified"
+  },
+  {
+    "code": "J01.11",
+    "description": "Acute recurrent frontal sinusitis"
+  },
+  {
+    "code": "J01.20",
+    "description": "Acute ethmoidal sinusitis, unspecified"
+  },
+  {
+    "code": "J01.21",
+    "description": "Acute recurrent ethmoidal sinusitis"
+  },
+  {
+    "code": "J01.30",
+    "description": "Acute sphenoidal sinusitis, unspecified"
+  },
+  {
+    "code": "J01.31",
+    "description": "Acute recurrent sphenoidal sinusitis"
+  },
+  {
+    "code": "J01.40",
+    "description": "Acute pansinusitis, unspecified"
+  },
+  {
+    "code": "J01.41",
+    "description": "Acute recurrent pansinusitis"
+  },
+  {
+    "code": "J01.80",
+    "description": "Other acute sinusitis"
+  },
+  {
+    "code": "J01.81",
+    "description": "Other acute recurrent sinusitis"
+  },
+  {
+    "code": "J01.90",
+    "description": "Acute sinusitis, unspecified"
+  },
+  {
+    "code": "J01.91",
+    "description": "Acute recurrent sinusitis, unspecified"
+  },
+  {
+    "code": "J02.0",
+    "description": "Streptococcal pharyngitis"
+  },
+  {
+    "code": "J02.8",
+    "description": "Acute pharyngitis due to other specified organisms"
+  },
+  {
+    "code": "J02.9",
+    "description": "Acute pharyngitis, unspecified"
+  },
+  {
+    "code": "J03.00",
+    "description": "Acute streptococcal tonsillitis, unspecified"
+  },
+  {
+    "code": "J03.01",
+    "description": "Acute recurrent streptococcal tonsillitis"
+  },
+  {
+    "code": "J03.80",
+    "description": "Acute tonsillitis due to other specified organisms"
+  },
+  {
+    "code": "J03.81",
+    "description": "Acute recurrent tonsillitis due to other specified organisms"
+  },
+  {
+    "code": "J03.90",
+    "description": "Acute tonsillitis, unspecified"
+  },
+  {
+    "code": "J03.91",
+    "description": "Acute recurrent tonsillitis, unspecified"
+  },
+  {
+    "code": "J04.0",
+    "description": "Acute laryngitis"
+  },
+  {
+    "code": "J04.10",
+    "description": "Acute tracheitis without obstruction"
+  },
+  {
+    "code": "J04.11",
+    "description": "Acute tracheitis with obstruction"
+  },
+  {
+    "code": "J04.2",
+    "description": "Acute laryngotracheitis"
+  },
+  {
+    "code": "J04.30",
+    "description": "Supraglottitis, unspecified, without obstruction"
+  },
+  {
+    "code": "J04.31",
+    "description": "Supraglottitis, unspecified, with obstruction"
+  },
+  {
+    "code": "J05.0",
+    "description": "Acute obstructive laryngitis [croup]"
+  },
+  {
+    "code": "J05.10",
+    "description": "Acute epiglottitis without obstruction"
+  },
+  {
+    "code": "J05.11",
+    "description": "Acute epiglottitis with obstruction"
+  },
+  {
+    "code": "J06.0",
+    "description": "Acute laryngopharyngitis"
+  },
+  {
+    "code": "J06.9",
+    "description": "Acute upper respiratory infection, unspecified"
+  },
+  {
+    "code": "J10.00",
+    "description": "Influenza due to other identified influenza virus with unspecified type of pneumonia"
+  },
+  {
+    "code": "J10.01",
+    "description": "Influenza due to other identified influenza virus with the same other identified influenza virus pneumonia"
+  },
+  {
+    "code": "J10.08",
+    "description": "Influenza due to other identified influenza virus with other specified pneumonia"
+  },
+  {
+    "code": "J10.1",
+    "description": "Influenza due to other identified influenza virus with other respiratory manifestations"
+  },
+  {
+    "code": "J10.2",
+    "description": "Influenza due to other identified influenza virus with gastrointestinal manifestations"
+  },
+  {
+    "code": "J10.81",
+    "description": "Influenza due to other identified influenza virus with encephalopathy"
+  },
+  {
+    "code": "J10.82",
+    "description": "Influenza due to other identified influenza virus with myocarditis"
+  },
+  {
+    "code": "J10.83",
+    "description": "Influenza due to other identified influenza virus with otitis media"
+  },
+  {
+    "code": "J10.89",
+    "description": "Influenza due to other identified influenza virus with other manifestations"
+  },
+  {
+    "code": "J11.00",
+    "description": "Influenza due to unidentified influenza virus with unspecified type of pneumonia"
+  },
+  {
+    "code": "J11.08",
+    "description": "Influenza due to unidentified influenza virus with specified pneumonia"
+  },
+  {
+    "code": "J11.1",
+    "description": "Influenza due to unidentified influenza virus with other respiratory manifestations"
+  },
+  {
+    "code": "J11.2",
+    "description": "Influenza due to unidentified influenza virus with gastrointestinal manifestations"
+  },
+  {
+    "code": "J11.81",
+    "description": "Influenza due to unidentified influenza virus with encephalopathy"
+  },
+  {
+    "code": "J11.82",
+    "description": "Influenza due to unidentified influenza virus with myocarditis"
+  },
+  {
+    "code": "J11.83",
+    "description": "Influenza due to unidentified influenza virus with otitis media"
+  },
+  {
+    "code": "J11.89",
+    "description": "Influenza due to unidentified influenza virus with other manifestations"
+  },
+  {
+    "code": "J12.0",
+    "description": "Adenoviral pneumonia"
+  },
+  {
+    "code": "J12.1",
+    "description": "Respiratory syncytial virus pneumonia"
+  },
+  {
+    "code": "J12.2",
+    "description": "Parainfluenza virus pneumonia"
+  },
+  {
+    "code": "J12.3",
+    "description": "Human metapneumovirus pneumonia"
+  },
+  {
+    "code": "J12.81",
+    "description": "Pneumonia due to SARS-associated coronavirus"
+  },
+  {
+    "code": "J12.82",
+    "description": "Pneumonia due to coronavirus disease 2019"
+  },
+  {
+    "code": "J12.89",
+    "description": "Other viral pneumonia"
+  },
+  {
+    "code": "J12.9",
+    "description": "Viral pneumonia, unspecified"
+  },
+  {
+    "code": "J13",
+    "description": "Pneumonia due to Streptococcus pneumoniae"
+  },
+  {
+    "code": "J14",
+    "description": "Pneumonia due to Hemophilus influenzae"
+  },
+  {
+    "code": "J15.0",
+    "description": "Pneumonia due to Klebsiella pneumoniae"
+  },
+  {
+    "code": "J15.1",
+    "description": "Pneumonia due to Pseudomonas"
+  },
+  {
+    "code": "J15.20",
+    "description": "Pneumonia due to staphylococcus, unspecified"
+  },
+  {
+    "code": "J15.211",
+    "description": "Pneumonia due to Methicillin susceptible Staphylococcus aureus"
+  },
+  {
+    "code": "J15.212",
+    "description": "Pneumonia due to Methicillin resistant Staphylococcus aureus"
+  },
+  {
+    "code": "J15.29",
+    "description": "Pneumonia due to other staphylococcus"
+  },
+  {
+    "code": "J15.3",
+    "description": "Pneumonia due to streptococcus, group B"
+  },
+  {
+    "code": "J15.4",
+    "description": "Pneumonia due to other streptococci"
+  },
+  {
+    "code": "J15.5",
+    "description": "Pneumonia due to Escherichia coli"
+  },
+  {
+    "code": "J15.61",
+    "description": "Pneumonia due to Acinetobacter baumannii"
+  },
+  {
+    "code": "J15.69",
+    "description": "Pneumonia due to other Gram-negative bacteria"
+  },
+  {
+    "code": "J15.7",
+    "description": "Pneumonia due to Mycoplasma pneumoniae"
+  },
+  {
+    "code": "J15.8",
+    "description": "Pneumonia due to other specified bacteria"
+  },
+  {
+    "code": "J15.9",
+    "description": "Unspecified bacterial pneumonia"
+  },
+  {
+    "code": "J16.0",
+    "description": "Chlamydial pneumonia"
+  },
+  {
+    "code": "J16.8",
+    "description": "Pneumonia due to other specified infectious organisms"
+  },
+  {
+    "code": "J17",
+    "description": "Pneumonia in diseases classified elsewhere"
+  },
+  {
+    "code": "J18.0",
+    "description": "Bronchopneumonia, unspecified organism"
+  },
+  {
+    "code": "J18.1",
+    "description": "Lobar pneumonia, unspecified organism"
+  },
+  {
+    "code": "J18.2",
+    "description": "Hypostatic pneumonia, unspecified organism"
+  }
+]

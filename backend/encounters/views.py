@@ -5,11 +5,12 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login, logout
 from django.http import StreamingHttpResponse, HttpResponseNotAllowed
+from django.contrib.auth.models import User
 
 import json
 
 from .models import UserProfile, Encounter, NoteTemplate, Patient, NoteVersion
-from .llm import call_llm
+from .llm import call_llm, search_code
 
 
 
@@ -20,27 +21,36 @@ def login_view(request):
         username = request.POST.get("username")
         password = request.POST.get("password")
 
-        user = authenticate(request, username=username, password=password)
+        user = authenticate(
+            request,
+            username=username,
+            password=password,
+        )
 
         if user is None:
             error = "Invalid username or password"
+
         else:
             profile = UserProfile.objects.get(user=user)
 
             if profile.role == "provider" and not profile.is_active_provider:
                 error = "This provider account has been deactivated."
+
             else:
                 login(request, user)
 
                 if profile.role == "admin":
                     return redirect("admin_dashboard")
+
                 elif profile.role == "provider":
                     return redirect("provider_workspace")
-                
-    else:
 
-        return render(request, "login.html", {"error": error})
+                else:
+                    error = "Invalid user role."
 
+    return render(request, "login.html", {
+        "error": error,
+    })
 
 
 
@@ -372,14 +382,247 @@ def autosave_note_draft(request, encounter_id):
 
 
 
+@require_POST
+def icd10_search(request):
+    user_input = request.POST.get("user_input", "").strip()
+
+    if not user_input:
+        return JsonResponse({
+            "success": False,
+            "codes": [],
+            "error": "Empty search input"
+        })
+
+    try:
+        codes = search_code(user_input)
+
+        return JsonResponse({
+            "success": True,
+            "codes": codes
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "codes": [],
+            "error": str(e)
+        }, status=500)
+
 
 @login_required
 def admin_dashboard(request):
-    return HttpResponse("Admin dashboard page")
+    from django.urls import reverse
+
+    error = None
+    valid_sections = {"encounters", "providers", "templates"}
+
+    def normalize_section(section):
+        if section in valid_sections:
+            return section
+        return "encounters"
+
+    active_section = normalize_section(
+        request.POST.get("active_section") or
+        request.GET.get("section") or
+        request.GET.get("active_section")
+    )
+
+    def redirect_admin(section=None):
+        section = normalize_section(section or active_section)
+        return redirect(f"{reverse('admin_dashboard')}?section={section}")
+
+    profile = get_object_or_404(UserProfile, user=request.user)
+
+    # Only admin users can access admin dashboard
+    if profile.role != "admin":
+        return redirect("provider_workspace")
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        # Add provider account
+        if action == "add_provider":
+            active_section = "providers"
+            username = request.POST.get("username")
+            email = request.POST.get("email")
+            password = request.POST.get("password")
+
+            if User.objects.filter(username=username).exists():
+                error = "A user with this username already exists."
+            else:
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password,
+                )
+
+                UserProfile.objects.create(
+                    user=user,
+                    role="provider",
+                    is_active_provider=True,
+                )
+
+                return redirect_admin("providers")
+
+        # Activate / deactivate provider account
+        elif action == "toggle_provider":
+            active_section = "providers"
+            provider_profile_id = request.POST.get("provider_profile_id")
+
+            provider_profile = get_object_or_404(
+                UserProfile,
+                id=provider_profile_id,
+                role="provider",
+            )
+
+            provider_profile.is_active_provider = not provider_profile.is_active_provider
+            provider_profile.save(update_fields=["is_active_provider"])
+
+            return redirect_admin("providers")
+        
+        # View encounter in read-only admin mode
+        elif action == "view_encounter":
+            encounter_id = request.POST.get("encounter_id")
+
+            encounter = get_object_or_404(
+                Encounter.objects.select_related(
+                    "provider",
+                    "patient",
+                ),
+                id=encounter_id,
+            )
+
+            note_versions = encounter.versions.all().order_by("-saved_at")
+            latest_note_version = note_versions.first()
+
+            return render(request, "view_encounter.html", {
+                "encounter": encounter,
+                "provider": encounter.provider,
+                "patient": encounter.patient,
+                "note_versions": note_versions,
+                "latest_note_version": latest_note_version,
+                "active_section": "encounters",
+            })
+
+        # Create note template
+        elif action == "create_template":
+            active_section = "templates"
+            template_name = request.POST.get("template_name")
+            encounter_type = request.POST.get("encounter_type", "")
+            prompt_text = request.POST.get("prompt_text")
+
+            NoteTemplate.objects.create(
+                name=template_name,
+                encounter_type=encounter_type,
+                prompt_text=prompt_text,
+                is_active=True,
+            )
+
+            return redirect_admin("templates")
+        
+        # Save / update note template
+        elif action == "save_template":
+            active_section = "templates"
+            template_id = request.POST.get("template_id")
+
+            template_name = request.POST.get("template_name")
+            encounter_type = request.POST.get("encounter_type", "")
+            prompt_text = request.POST.get("prompt_text")
+            is_active = request.POST.get("is_active") == "on"
+
+            template = get_object_or_404(
+                NoteTemplate,
+                id=template_id,
+            )
+
+            template.name = template_name
+            template.encounter_type = encounter_type
+            template.prompt_text = prompt_text
+            template.is_active = is_active
+
+            template.save(
+                update_fields=[
+                    "name",
+                    "encounter_type",
+                    "prompt_text",
+                    "is_active",
+                    "updated_at",
+                ]
+            )
+
+            return redirect_admin("templates")
+
+        # Deactivate note template instead of deleting it
+        elif action == "toggle_template":
+            active_section = "templates"
+            template_id = request.POST.get("template_id")
+
+            template = get_object_or_404(NoteTemplate, id=template_id)
+            template.is_active = not template.is_active
+            template.save(update_fields=["is_active", "updated_at"])
+
+            return redirect_admin("templates")
+
+        # Delete note template
+        elif action == "delete_template":
+            active_section = "templates"
+            template_id = request.POST.get("template_id")
+
+            template = get_object_or_404(NoteTemplate, id=template_id)
+            template.delete()
+
+            return redirect_admin("templates")
+
+    # GET filters for encounters
+    provider_profile_id = request.GET.get("provider")
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+
+    encounters = Encounter.objects.select_related(
+        "provider",
+        "patient",
+    ).order_by("-updated_at")
+
+    if provider_profile_id:
+        provider_profile = UserProfile.objects.filter(
+            id=provider_profile_id,
+            role="provider",
+        ).select_related("user").first()
+
+        if provider_profile:
+            encounters = encounters.filter(provider=provider_profile.user)
+
+    if start_date:
+        encounters = encounters.filter(updated_at__date__gte=start_date)
+
+    if end_date:
+        encounters = encounters.filter(updated_at__date__lte=end_date)
+
+    providers = UserProfile.objects.filter(
+        role="provider"
+    ).select_related(
+        "user"
+    ).order_by(
+        "user__username"
+    )
+
+    templates = NoteTemplate.objects.all().order_by("name")
+
+    return render(request, "admin_dashboard.html", {
+        "error": error,
+        "encounters": encounters,
+        "providers": providers,
+        "templates": templates,
+        "active_section": active_section,
+        "selected_provider": provider_profile_id,
+        "start_date": start_date,
+        "end_date": end_date,
+    })
 
 
 
 
 
 def logout_view(request):
-    return HttpResponse("logout")
+    logout(request)
+    return redirect("login")

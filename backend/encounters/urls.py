@@ -26,4 +26,9 @@ urlpatterns = [
         views.autosave_note_draft,
         name="autosave_note_draft",
     ),
+    path(
+        "icd10-search/",
+        views.icd10_search,
+        name="icd10_search",
+    ),
 ]

@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard | AI Clinical Scribe</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fw-semibold" href="#">
+            <i class="bi bi-shield-lock me-2 text-primary"></i>
+            AI Clinical Scribe Admin
+        </a>
+
+        <div class="d-flex align-items-center gap-3">
+            <span class="text-muted">
+                Logged in as <strong>{{ request.user.username }}</strong>
+            </span>
+
+            <a href="{% url 'logout' %}" class="btn btn-outline-secondary btn-sm">
+                Logout
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- Sidebar -->
+        <aside class="col-md-3 col-lg-2 bg-white border-end min-vh-100 p-0 shadow-sm">
+            <div class="p-4 border-bottom">
+                <h5 class="fw-bold mb-1">Admin Dashboard</h5>
+                <small class="text-muted">
+                    Manage encounters, providers, and note templates.
+                </small>
+            </div>
+
+            <div class="list-group list-group-flush">
+                <a href="?section=encounters"
+                   class="list-group-item list-group-item-action py-3 {% if active_section == 'encounters' %}active{% endif %}"
+                   onclick="showSection('encounters', this); return false;">
+                    <i class="bi bi-clipboard2-pulse me-2"></i>
+                    All Encounters
+                </a>
+
+                <a href="?section=providers"
+                   class="list-group-item list-group-item-action py-3 {% if active_section == 'providers' %}active{% endif %}"
+                   onclick="showSection('providers', this); return false;">
+                    <i class="bi bi-person-badge me-2"></i>
+                    Provider Accounts
+                </a>
+
+                <a href="?section=templates"
+                   class="list-group-item list-group-item-action py-3 {% if active_section == 'templates' %}active{% endif %}"
+                   onclick="showSection('templates', this); return false;">
+                    <i class="bi bi-file-earmark-text me-2"></i>
+                    Note Templates
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="col-md-9 col-lg-10 px-4 py-4">
+
+            <div class="mb-4">
+                <h1 class="fw-bold mb-1">Admin Dashboard</h1>
+                <p class="text-muted mb-0">
+                    View encounters, manage providers, and configure AI note templates.
+                </p>
+            </div>
+
+            {% if error %}
+                <div class="alert alert-danger">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <!-- Section 1: All Encounters -->
+            <section id="encounters-section" class="content-section" {% if active_section != 'encounters' %}style="display: none;"{% endif %}>
+                <section class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-bottom">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3"
+                                     style="width: 42px; height: 42px;">
+                                    <i class="bi bi-clipboard2-pulse fs-5"></i>
+                                </div>
+
+                                <div>
+                                    <h5 class="mb-0">All Encounters</h5>
+                                    <small class="text-muted">
+                                        View all encounters across all providers. Click an encounter row to open it in read-only mode.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <span class="badge text-bg-light">
+                                {{ encounters|length }} total
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <form method="get" class="row g-3">
+                            <input type="hidden" name="section" value="encounters">
+                            <div class="col-md-4">
+                                <label class="form-label">Provider</label>
+                                <select name="provider" class="form-select">
+                                    <option value="">All Providers</option>
+                                    {% for provider in providers %}
+                                        <option value="{{ provider.id }}" {% if selected_provider == provider.id|stringformat:'s' %}selected{% endif %}>
+                                            {{ provider.user.username }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Start Date</label>
+                                <input type="date" name="start_date" class="form-control" value="{{ start_date|default:'' }}">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">End Date</label>
+                                <input type="date" name="end_date" class="form-control" value="{{ end_date|default:'' }}">
+                            </div>
+
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-funnel me-1"></i>
+                                    Filter
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="card-body p-0">
+                        {% if encounters %}
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-4">Patient</th>
+                                            <th>Provider</th>
+                                            <th>DOB</th>
+                                            <th>Status</th>
+                                            <th>Created</th>
+                                            <th>Last Updated</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        {% for encounter in encounters %}
+                                            <tr
+                                                class="encounter-row"
+                                                style="cursor: pointer;"
+                                                data-encounter-id="{{ encounter.id }}"
+                                                title="Click to view encounter"
+                                            >
+                                                <td class="ps-4">
+                                                    <div class="fw-semibold">
+                                                        {{ encounter.patient.first_name }}
+                                                        {{ encounter.patient.last_name }}
+                                                    </div>
+                                                    <small class="text-muted">
+                                                        Encounter #{{ encounter.id }}
+                                                    </small>
+                                                </td>
+
+                                                <td>
+                                                    {{ encounter.provider.username }}
+                                                </td>
+
+                                                <td>
+                                                    {{ encounter.patient.date_of_birth }}
+                                                </td>
+
+                                                <td>
+                                                    {% if encounter.status == "draft" %}
+                                                        <span class="badge text-bg-warning">Draft</span>
+                                                    {% elif encounter.status == "finalized" %}
+                                                        <span class="badge text-bg-success">Finalized</span>
+                                                    {% else %}
+                                                        <span class="badge text-bg-secondary">
+                                                            {{ encounter.status }}
+                                                        </span>
+                                                    {% endif %}
+                                                </td>
+
+                                                <td>
+                                                    <small class="text-muted">
+                                                        {{ encounter.created_at }}
+                                                    </small>
+                                                </td>
+
+                                                <td>
+                                                    <small class="text-muted">
+                                                        {{ encounter.updated_at }}
+                                                    </small>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-folder2-open text-muted" style="font-size: 3rem;"></i>
+                                <h5 class="mt-3">No encounters found</h5>
+                                <p class="text-muted mb-0">
+                                    Try changing the provider or date filters.
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </section>
+            </section>
+
+            <!-- Section 2: Provider Accounts -->
+            <section id="providers-section" class="content-section" {% if active_section != 'providers' %}style="display: none;"{% endif %}>
+                <section class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3"
+                                 style="width: 42px; height: 42px;">
+                                <i class="bi bi-person-plus fs-5"></i>
+                            </div>
+
+                            <div>
+                                <h5 class="mb-0">Add Provider Account</h5>
+                                <small class="text-muted">
+                                    Create a new provider user account.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="active_section" value="providers">
+                            <input type="hidden" name="action" value="add_provider">
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Username</label>
+                                    <input type="text" name="username" class="form-control" required>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" name="email" class="form-control" required>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label">Temporary Password</label>
+                                    <input type="password" name="password" class="form-control" required>
+                                </div>
+
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="bi bi-plus-circle me-1"></i>
+                                        Add Provider
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <section class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h5 class="mb-0">Provider Accounts</h5>
+                                <small class="text-muted">
+                                    Activate or deactivate provider accounts.
+                                </small>
+                            </div>
+
+                            <span class="badge text-bg-light">
+                                {{ providers|length }} total
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-0">
+                        {% if providers %}
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-4">Provider</th>
+                                            <th>Email</th>
+                                            <th>Status</th>
+                                            <th class="text-end pe-4">Action</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        {% for provider in providers %}
+                                            <tr>
+                                                <td class="ps-4 fw-semibold">
+                                                    {{ provider.user.username }}
+                                                </td>
+
+                                                <td>
+                                                    {{ provider.user.email }}
+                                                </td>
+
+                                                <td>
+                                                    {% if provider.is_active_provider %}
+                                                        <span class="badge text-bg-success">Active</span>
+                                                    {% else %}
+                                                        <span class="badge text-bg-secondary">Inactive</span>
+                                                    {% endif %}
+                                                </td>
+
+                                                <td class="text-end pe-4">
+                                                    <form method="post" class="d-inline">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="active_section" value="providers">
+                                                        <input type="hidden" name="action" value="toggle_provider">
+                                                        <input type="hidden" name="provider_profile_id" value="{{ provider.id }}">
+
+                                                        {% if provider.is_active_provider %}
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                                Deactivate
+                                                            </button>
+                                                        {% else %}
+                                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                                Activate
+                                                            </button>
+                                                        {% endif %}
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-person-x text-muted" style="font-size: 3rem;"></i>
+                                <h5 class="mt-3">No providers yet</h5>
+                                <p class="text-muted mb-0">
+                                    Use the form above to add a provider account.
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </section>
+            </section>
+
+            <!-- Section 3: Note Templates -->
+            <section id="templates-section" class="content-section" {% if active_section != 'templates' %}style="display: none;"{% endif %}>
+
+                <!-- Template Editing Area -->
+                <section class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-bottom">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3"
+                                     style="width: 42px; height: 42px;">
+                                    <i class="bi bi-file-earmark-plus fs-5"></i>
+                                </div>
+
+                                <div>
+                                    <h5 class="mb-0">Template Editing Area</h5>
+                                    <small class="text-muted">
+                                        Click a template below to edit it, or write a new one from scratch.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <span id="selected-template-badge" class="badge text-bg-light">
+                                No template selected
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <form method="post" id="template-editor-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="active_section" value="templates">
+
+                            <!-- This value is filled when a listed template is clicked. -->
+                            <input type="hidden" name="template_id" id="selected-template-id">
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Template Name</label>
+                                    <input
+                                        type="text"
+                                        name="template_name"
+                                        id="template-name-input"
+                                        class="form-control"
+                                        placeholder="e.g. Orthopedic Follow-up"
+                                        required
+                                    >
+                                </div>
+
+                                <div class="col-md-8">
+                                    <label class="form-label">Encounter Type</label>
+                                    <input
+                                        type="text"
+                                        name="encounter_type"
+                                        id="encounter-type-input"
+                                        class="form-control"
+                                        placeholder="e.g. follow-up, new patient evaluation, urgent care"
+                                    >
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label">Prompt Text</label>
+                                    <textarea
+                                        name="prompt_text"
+                                        id="prompt-text-input"
+                                        class="form-control"
+                                        rows="8"
+                                        placeholder="Enter the structured prompt used for SOAP note generation..."
+                                        required
+                                    ></textarea>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-check mt-2">
+                                        <input
+                                            class="form-check-input"
+                                            type="checkbox"
+                                            name="is_active"
+                                            id="template-active-input"
+                                            checked
+                                        >
+                                        <label class="form-check-label" for="template-active-input">
+                                            Active template
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 d-flex gap-2">
+                                    <button
+                                        type="submit"
+                                        name="action"
+                                        value="create_template"
+                                        class="btn btn-primary"
+                                    >
+                                        <i class="bi bi-plus-circle me-1"></i>
+                                        Create as New
+                                    </button>
+
+                                    <button
+                                        type="submit"
+                                        name="action"
+                                        value="save_template"
+                                        id="save-existing-template-btn"
+                                        class="btn btn-outline-primary"
+                                        disabled
+                                    >
+                                        <i class="bi bi-save me-1"></i>
+                                        Save on Existing
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-secondary"
+                                        onclick="clearTemplateEditor()"
+                                    >
+                                        Clear
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Existing Templates -->
+                <section class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h5 class="mb-0">Note Templates</h5>
+                                <small class="text-muted">
+                                    Click a template row to load it into the editing area.
+                                </small>
+                            </div>
+
+                            <span class="badge text-bg-light">
+                                {{ templates|length }} total
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-0">
+                        {% if templates %}
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-4">Template</th>
+                                            <th>Encounter Type</th>
+                                            <th>Status</th>
+                                            <th>Updated</th>
+                                            <th class="text-end pe-4">Action</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        {% for template in templates %}
+                                            <tr
+                                                id="template-row-{{ template.id }}"
+                                                class="template-row"
+                                                style="cursor: pointer;"
+                                                data-template-id="{{ template.id }}"
+                                                data-template-name="{{ template.name|escape }}"
+                                                data-encounter-type="{{ template.encounter_type|escape }}"
+                                                data-prompt-text="{{ template.prompt_text|escape }}"
+                                                data-is-active="{{ template.is_active|yesno:'true,false' }}"
+                                            >
+                                                <td class="ps-4">
+                                                    <div class="fw-semibold">
+                                                        {{ template.name }}
+                                                    </div>
+                                                    <small class="text-muted">
+                                                        Template #{{ template.id }}
+                                                    </small>
+                                                </td>
+
+                                                <td>
+                                                    {% if template.encounter_type %}
+                                                        {{ template.encounter_type }}
+                                                    {% else %}
+                                                        <span class="text-muted">No encounter type</span>
+                                                    {% endif %}
+                                                </td>
+
+                                                <td>
+                                                    {% if template.is_active %}
+                                                        <span class="badge text-bg-success">Active</span>
+                                                    {% else %}
+                                                        <span class="badge text-bg-secondary">Inactive</span>
+                                                    {% endif %}
+                                                </td>
+
+                                                <td>
+                                                    <small class="text-muted">
+                                                        {{ template.updated_at }}
+                                                    </small>
+                                                </td>
+
+                                                <td class="text-end pe-4">
+                                                    <form method="post" class="d-inline template-action-form">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="active_section" value="templates">
+                                                        <input type="hidden" name="action" value="toggle_template">
+                                                        <input type="hidden" name="template_id" value="{{ template.id }}">
+
+                                                        {% if template.is_active %}
+                                                            <button type="submit" class="btn btn-sm btn-outline-secondary me-1">
+                                                                Deactivate
+                                                            </button>
+                                                        {% else %}
+                                                            <button type="submit" class="btn btn-sm btn-outline-success me-1">
+                                                                Activate
+                                                            </button>
+                                                        {% endif %}
+                                                    </form>
+
+                                                    <form method="post" class="d-inline template-action-form">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="active_section" value="templates">
+                                                        <input type="hidden" name="action" value="delete_template">
+                                                        <input type="hidden" name="template_id" value="{{ template.id }}">
+
+                                                        <button
+                                                            type="submit"
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            onclick="return confirm('Delete this template?');"
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-file-earmark-text text-muted" style="font-size: 3rem;"></i>
+                                <h5 class="mt-3">No templates yet</h5>
+                                <p class="text-muted mb-0">
+                                    Use the editing area above to create your first note template.
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </section>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<script>
+    function showSection(sectionName, clickedLink) {
+        const sections = document.querySelectorAll(".content-section");
+
+        sections.forEach(section => {
+            section.style.display = "none";
+        });
+
+        document.getElementById(sectionName + "-section").style.display = "block";
+
+        const sidebarLinks = document.querySelectorAll(".list-group-item");
+
+        sidebarLinks.forEach(link => {
+            link.classList.remove("active");
+        });
+
+        clickedLink.classList.add("active");
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("section", sectionName);
+        window.history.replaceState({}, "", url);
+    }
+
+    function selectTemplate(templateId, templateName, encounterType, promptText, isActive) {
+        document.getElementById("selected-template-id").value = templateId;
+        document.getElementById("template-name-input").value = templateName;
+        document.getElementById("encounter-type-input").value = encounterType;
+        document.getElementById("prompt-text-input").value = promptText;
+        document.getElementById("template-active-input").checked = isActive === "true";
+
+        document.getElementById("save-existing-template-btn").disabled = false;
+        document.getElementById("selected-template-badge").textContent = "Selected Template #" + templateId;
+
+        const rows = document.querySelectorAll("[id^='template-row-']");
+        rows.forEach(row => {
+            row.classList.remove("table-primary");
+        });
+
+        const selectedRow = document.getElementById("template-row-" + templateId);
+        if (selectedRow) {
+            selectedRow.classList.add("table-primary");
+        }
+
+        document.getElementById("template-name-input").focus();
+    }
+
+    function clearTemplateEditor() {
+        document.getElementById("selected-template-id").value = "";
+        document.getElementById("template-name-input").value = "";
+        document.getElementById("encounter-type-input").value = "";
+        document.getElementById("prompt-text-input").value = "";
+        document.getElementById("template-active-input").checked = true;
+
+        document.getElementById("save-existing-template-btn").disabled = true;
+        document.getElementById("selected-template-badge").textContent = "No template selected";
+
+        const rows = document.querySelectorAll("[id^='template-row-']");
+        rows.forEach(row => {
+            row.classList.remove("table-primary");
+        });
+
+        document.getElementById("template-name-input").focus();
+    }
+
+    function submitViewEncounter(encounterId) {
+        const form = document.createElement("form");
+        form.method = "post";
+        form.style.display = "none";
+
+        const csrfInput = document.createElement("input");
+        csrfInput.type = "hidden";
+        csrfInput.name = "csrfmiddlewaretoken";
+        csrfInput.value = "{{ csrf_token }}";
+        form.appendChild(csrfInput);
+
+        const activeSectionInput = document.createElement("input");
+        activeSectionInput.type = "hidden";
+        activeSectionInput.name = "active_section";
+        activeSectionInput.value = "encounters";
+        form.appendChild(activeSectionInput);
+
+        const actionInput = document.createElement("input");
+        actionInput.type = "hidden";
+        actionInput.name = "action";
+        actionInput.value = "view_encounter";
+        form.appendChild(actionInput);
+
+        const encounterInput = document.createElement("input");
+        encounterInput.type = "hidden";
+        encounterInput.name = "encounter_id";
+        encounterInput.value = encounterId;
+        form.appendChild(encounterInput);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const encounterRows = document.querySelectorAll(".encounter-row");
+
+        encounterRows.forEach(row => {
+            row.addEventListener("click", function () {
+                submitViewEncounter(this.dataset.encounterId);
+            });
+        });
+
+        const templateRows = document.querySelectorAll(".template-row");
+
+        templateRows.forEach(row => {
+            row.addEventListener("click", function () {
+                selectTemplate(
+                    this.dataset.templateId,
+                    this.dataset.templateName,
+                    this.dataset.encounterType,
+                    this.dataset.promptText,
+                    this.dataset.isActive
+                );
+            });
+        });
+
+        const templateActionForms = document.querySelectorAll(".template-action-form");
+
+        templateActionForms.forEach(form => {
+            form.addEventListener("click", function (event) {
+                event.stopPropagation();
+            });
+        });
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

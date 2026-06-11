@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Encounter | AI Clinical Scribe</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fw-semibold" href="{% url 'provider_workspace' %}">
+            <i class="bi bi-clipboard2-pulse text-primary me-2"></i>
+            AI Clinical Scribe
+        </a>
+
+        <div class="d-flex align-items-center gap-3">
+            <span class="text-muted">
+                Provider: <strong>{{ provider.username }}</strong>
+            </span>
+
+            <a href="{% url 'provider_workspace' %}" class="btn btn-outline-secondary btn-sm">
+                Back to Workspace
+            </a>
+        </div>
+    </div>
+</nav>
+
+<main class="container-fluid px-4 py-4">
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="mb-1">
+                    {{ patient.first_name }} {{ patient.last_name }}
+                </h3>
+
+                <p class="text-muted mb-0">
+                    DOB: {{ patient.date_of_birth }}
+                    | Encounter #{{ encounter.id }}
+                    | Status: {{ encounter.status }}
+                </p>
+            </div>
+
+            <!-- {% if encounter.status == "draft" %}
+                <span class="badge text-bg-warning fs-6">Draft</span>
+            {% elif encounter.status == "finalized" %}
+                <span class="badge text-bg-success fs-6">Finalized</span>
+            {% else %}
+                <span class="badge text-bg-secondary fs-6">{{ encounter.status }}</span>
+            {% endif %} -->
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Section 1: Raw Encounter Text -->
+        <div class="col-lg-4">
+            <section class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">
+                        <i class="bi bi-file-earmark-text me-2 text-primary"></i>
+                        Raw Encounter Text
+                    </h5>
+                    <small class="text-muted">
+                        Paste transcript or type clinical observations.
+                    </small>
+                </div>
+
+                <div class="card-body">
+
+                    <form method="post" action="{% url 'save_raw_input' encounter.id %}">
+                        {% csrf_token %}
+
+                        <textarea
+                            id="rawText"
+                            name="raw_text"
+                            class="form-control"
+                            rows="22"
+                            placeholder="Paste raw encounter transcript or freeform clinical observations here..."
+                        >{{ encounter.raw_input }}</textarea>
+
+                        <div class="d-grid mt-3">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="bi bi-save me-1"></i>
+                                Save Raw Input
+                            </button>
+                        </div>
+                    </form>
+
+                    <form id="generateNoteForm" method="post" action="{% url 'generate_note' encounter.id %}">
+                        {% csrf_token %}
+
+                        <input type="hidden" name="encounter_id" value="{{ encounter.id }}">
+                        <input type="hidden" id="generateRawText" name="raw_text">
+
+                        <div class="mb-3">
+                            <label for="noteTemplateSelect" class="form-label">Note Template</label>
+                            <select id="noteTemplateSelect" name="template_id" class="form-select" required>
+                                {% for template in note_templates %}
+                                    <option
+                                        value="{{ template.id }}"
+                                    >
+                                        {{ template.name }}
+                                        {% if template.encounter_type %} — {{ template.encounter_type }}{% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">
+                                This selected prompt template will be sent when generating the SOAP note.
+                            </small>
+                        </div>
+
+                        <button
+                            id="generateNoteButton"
+                            type="submit"
+                            name="generate_note"
+                            value="1"
+                            class="btn btn-primary w-100"
+                        >
+                            <i class="bi bi-stars me-1"></i>
+                            Generate SOAP Note
+                        </button>
+
+                        <div id="generateStatus" class="text-muted small mt-2"></div>
+                    </form>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- Section 2: ICD-10 Search -->
+        <div class="col-lg-4">
+            <section class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">
+                        <i class="bi bi-search-heart me-2 text-primary"></i>
+                        ICD-10 Search
+                    </h5>
+                    <small class="text-muted">
+                        Search symptoms or conditions and append codes to Assessment.
+                    </small>
+                </div>
+
+                <div class="card-body">
+
+                    <form id="icdSearchForm" method="post" action="{% url 'icd10_search' %}">
+                        {% csrf_token %}
+
+                        <label for="icdSearchInput" class="form-label">Symptom or condition</label>
+
+                        <div class="input-group mb-2">
+                            <input
+                                id="icdSearchInput"
+                                type="text"
+                                name="user_input"
+                                class="form-control"
+                                placeholder="e.g. cough, chest pain, diabetes"
+                                autocomplete="off"
+                            >
+
+                            <button id="icdSearchButton" type="submit" class="btn btn-outline-primary">
+                                Search
+                            </button>
+                        </div>
+
+                        <div id="icdSearchStatus" class="text-muted small mb-3">
+                            Search results will appear below.
+                        </div>
+                    </form>
+
+                    <div id="icdResults" class="list-group"></div>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- Section 3: Note History -->
+        <div class="col-lg-4">
+            <section class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history me-2 text-primary"></i>
+                        Note History
+                    </h5>
+                    <small class="text-muted">
+                        Read-only history of saved and draft note versions.
+                    </small>
+                </div>
+
+                <div class="card-body">
+                    {% if note_versions %}
+                        <div class="list-group small" style="max-height: 620px; overflow-y: auto;">
+                            {% for version in note_versions %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                        <div>
+                                            <strong>Version {{ version.version_number }}</strong>
+
+                                            {% if version.status == "finalized" %}
+                                                <span class="badge text-bg-success ms-1">Saved</span>
+                                            {% elif version.status == "draft" %}
+                                                <span class="badge text-bg-warning ms-1">Draft</span>
+                                            {% else %}
+                                                <span class="badge text-bg-secondary ms-1">{{ version.status|title }}</span>
+                                            {% endif %}
+                                        </div>
+
+                                        <span class="text-muted">{{ version.saved_at }}</span>
+                                    </div>
+
+                                    <div class="text-muted mb-2">
+                                        Saved by
+                                        {% if version.saved_by %}
+                                            {{ version.saved_by.username }}
+                                        {% else %}
+                                            Unknown
+                                        {% endif %}
+                                    </div>
+
+                                    <textarea
+                                        class="form-control form-control-sm bg-light"
+                                        rows="7"
+                                        readonly
+                                    >{{ version.note_text }}</textarea>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-muted small">
+                            No note history yet.
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+
+        <!-- Section 4: SOAP Note Editing Area -->
+        <div class="col-12">
+            <section class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="mb-0">
+                                <i class="bi bi-pencil-square me-2 text-primary"></i>
+                                SOAP Note Editing Area
+                            </h5>
+                            <small class="text-muted">
+                                Edit the current note here. Autosave only tracks changes in this editing area.
+                            </small>
+                        </div>
+
+                        {% if latest_note_version and latest_note_version.status == "finalized" %}
+                            <span id="noteSaveStatus" class="badge text-bg-success">Saved</span>
+                        {% elif latest_note_version and latest_note_version.status == "draft" %}
+                            <span id="noteSaveStatus" class="badge text-bg-warning">Draft</span>
+                        {% else %}
+                            <span id="noteSaveStatus" class="badge text-bg-secondary">Unsaved</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="fw-semibold">
+                            {% if latest_note_version %}
+                                Editing Version {{ latest_note_version.version_number }}
+                            {% else %}
+                                New Draft
+                            {% endif %}
+                        </div>
+
+                        <small class="text-muted">
+                            {% if latest_note_version %}
+                                Last updated by
+                                {% if latest_note_version.saved_by %}
+                                    {{ latest_note_version.saved_by.username }}
+                                {% else %}
+                                    Unknown
+                                {% endif %}
+                                at {{ latest_note_version.saved_at }}
+
+                                {% if latest_note_version.status %}
+                                    | {{ latest_note_version.status|title }}
+                                {% endif %}
+                            {% else %}
+                                Not saved yet
+                            {% endif %}
+                        </small>
+
+                        <div id="autosaveStatus" class="text-muted small mt-1"></div>
+                    </div>
+
+                    <form method="post" action="{% url 'save_note_version' encounter.id %}">
+                        {% csrf_token %}
+
+                        <input type="hidden" name="encounter_id" value="{{ encounter.id }}">
+
+                        <textarea
+                            id="soapNote"
+                            name="note_text"
+                            class="form-control"
+                            rows="22"
+                        >{% if latest_note_version %}{{ latest_note_version.note_text }}{% else %}Subjective:
+
+
+Objective:
+
+
+Assessment:
+
+
+Plan:
+{% endif %}</textarea>
+
+                        <div class="d-grid gap-2 mt-3">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-save me-1"></i>
+                                Save Note Version
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+    </div>
+
+</main>
+
+<script>
+    function notifySoapNoteChanged() {
+        const soapNote = document.getElementById("soapNote");
+
+        if (soapNote) {
+            soapNote.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+    }
+
+    function normalizeSOAPNoteFormatting(text) {
+        if (!text) {
+            return "";
+        }
+
+        // Convert bold SOAP headings from the LLM into plain headings.
+        text = text.replace(/\*\*\s*(Subjective|Objective|Assessment|Plan)\s*:\s*\*\*/gi, "$1:");
+
+        // Convert common LLM ICD-10 markdown formats into the same format used by result buttons.
+        // Examples:
+        // - **ICD-10: R50.9 — Fever, unspecified**
+        // **- J10.89: Influenza due to other identified influenza virus**
+        text = text.replace(/-\s*\*\*\s*ICD-10\s*:\s*([A-Z][0-9][A-Z0-9](?:\.[A-Z0-9]+)?)\s*[—–-]\s*([^*\n]+?)\s*\*\*/gi, "- $1: $2");
+        text = text.replace(/\*\*\s*-\s*([A-Z][0-9][A-Z0-9](?:\.[A-Z0-9]+)?)\s*:\s*([^*\n]+?)\s*\*\*/gi, "- $1: $2");
+        text = text.replace(/\*\*\s*ICD-10\s*:\s*([A-Z][0-9][A-Z0-9](?:\.[A-Z0-9]+)?)\s*[—–-]\s*([^*\n]+?)\s*\*\*/gi, "- $1: $2");
+        text = text.replace(/ICD-10\s*:\s*([A-Z][0-9][A-Z0-9](?:\.[A-Z0-9]+)?)\s*[—–-]\s*/gi, "- $1: ");
+
+        // Remove remaining markdown bold markers so the textarea stays plain text.
+        text = text.replace(/\*\*/g, "");
+
+        // Clean trailing spaces.
+        text = text.replace(/[ \t]+$/gm, "");
+
+        return text;
+    }
+
+    function appendICDToAssessment(code, description) {
+        const soapNote = document.getElementById("soapNote");
+
+        if (!soapNote) {
+            return;
+        }
+
+        const line = `- ${code}: ${description}`;
+        let text = normalizeSOAPNoteFormatting(soapNote.value);
+
+        // Avoid adding the same ICD-10 code twice.
+        if (text.includes(line)) {
+            soapNote.value = text;
+            return;
+        }
+
+        // Prefer inserting inside the Assessment section, before Plan.
+        if (text.includes("Assessment:") && text.includes("Plan:")) {
+            text = text.replace("Plan:", `${line}\n\nPlan:`);
+        } else if (text.includes("Assessment:")) {
+            text = text.replace("Assessment:", `Assessment:\n${line}`);
+        } else {
+            text += `\n\nAssessment:\n${line}`;
+        }
+
+        soapNote.value = text;
+        notifySoapNoteChanged();
+    }
+</script>
+
+<script>
+    const icdSearchForm = document.getElementById("icdSearchForm");
+    const icdSearchInput = document.getElementById("icdSearchInput");
+    const icdSearchButton = document.getElementById("icdSearchButton");
+    const icdSearchStatus = document.getElementById("icdSearchStatus");
+    const icdResults = document.getElementById("icdResults");
+
+    function setICDSearchStatus(message, isError = false) {
+        if (!icdSearchStatus) {
+            return;
+        }
+
+        icdSearchStatus.textContent = message;
+        icdSearchStatus.className = isError
+            ? "text-danger small mb-3"
+            : "text-muted small mb-3";
+    }
+
+    function renderICDResults(codes) {
+        icdResults.innerHTML = "";
+
+        if (!codes || codes.length === 0) {
+            const emptyMessage = document.createElement("div");
+            emptyMessage.className = "text-muted small";
+            emptyMessage.textContent = "No ICD-10 codes found.";
+            icdResults.appendChild(emptyMessage);
+            return;
+        }
+
+        codes.forEach(function (item) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "list-group-item list-group-item-action";
+
+            const topRow = document.createElement("div");
+            topRow.className = "d-flex justify-content-between align-items-center";
+
+            const codeText = document.createElement("strong");
+            codeText.textContent = item.code;
+
+            const selectText = document.createElement("small");
+            selectText.className = "text-primary";
+            selectText.textContent = "Select";
+
+            topRow.appendChild(codeText);
+            topRow.appendChild(selectText);
+
+            const descriptionText = document.createElement("div");
+            descriptionText.textContent = item.description;
+
+            button.appendChild(topRow);
+            button.appendChild(descriptionText);
+
+            button.addEventListener("click", function () {
+                document
+                    .querySelectorAll("#icdResults .list-group-item")
+                    .forEach(function (btn) {
+                        btn.classList.remove("active");
+                    });
+
+                button.classList.add("active");
+                appendICDToAssessment(item.code, item.description);
+                setICDSearchStatus(`Added ${item.code} to Assessment.`);
+            });
+
+            icdResults.appendChild(button);
+        });
+    }
+
+    if (icdSearchForm) {
+        icdSearchForm.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const userInput = icdSearchInput.value.trim();
+
+            if (!userInput) {
+                icdResults.innerHTML = "";
+                setICDSearchStatus("Please enter a symptom or condition.", true);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("user_input", userInput);
+
+            icdSearchButton.disabled = true;
+            icdSearchButton.textContent = "Searching...";
+            setICDSearchStatus("Searching ICD-10 codes...");
+            icdResults.innerHTML = "";
+
+            try {
+                const response = await fetch(icdSearchForm.action, {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "X-CSRFToken": getCSRFToken(),
+                    },
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    setICDSearchStatus(data.error || "ICD-10 search failed.", true);
+                    renderICDResults([]);
+                    return;
+                }
+
+                setICDSearchStatus("Select a code from the results below.");
+                renderICDResults(data.codes);
+            } catch (error) {
+                setICDSearchStatus(`ICD-10 search error: ${error.message}`, true);
+                renderICDResults([]);
+            } finally {
+                icdSearchButton.disabled = false;
+                icdSearchButton.textContent = "Search";
+            }
+        });
+    }
+</script>
+
+
+<script>
+    const generateNoteForm = document.getElementById("generateNoteForm");
+
+    if (generateNoteForm) {
+        generateNoteForm.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const rawText = document.getElementById("rawText").value;
+            const soapNote = document.getElementById("soapNote");
+            const generateRawText = document.getElementById("generateRawText");
+            const generateButton = document.getElementById("generateNoteButton");
+            const generateStatus = document.getElementById("generateStatus");
+
+            let outputQueue = "";
+            let isTyping = false;
+            let streamFinished = false;
+
+            function finishIfReady() {
+                if (streamFinished && outputQueue.length === 0 && !isTyping) {
+                    soapNote.value = normalizeSOAPNoteFormatting(soapNote.value);
+                    notifySoapNoteChanged();
+
+                    generateStatus.textContent = "Generation complete.";
+                    generateButton.disabled = false;
+                }
+            }
+
+            function typeNextCharacter() {
+                if (outputQueue.length === 0) {
+                    isTyping = false;
+                    finishIfReady();
+                    return;
+                }
+
+                isTyping = true;
+
+                const nextChar = outputQueue[0];
+                outputQueue = outputQueue.slice(1);
+
+                soapNote.value += nextChar;
+                soapNote.scrollTop = soapNote.scrollHeight;
+                notifySoapNoteChanged();
+
+                // Control visual typing speed here.
+                // Smaller = faster, larger = slower.
+                setTimeout(typeNextCharacter, 15);
+            }
+
+            function enqueueText(text) {
+                outputQueue += text;
+
+                if (!isTyping) {
+                    typeNextCharacter();
+                }
+            }
+
+            generateRawText.value = rawText;
+            soapNote.value = "";
+            notifySoapNoteChanged();
+
+            generateButton.disabled = true;
+            generateStatus.textContent = "Generating SOAP note...";
+
+            const formData = new FormData(generateNoteForm);
+            const csrfToken = generateNoteForm.querySelector("input[name='csrfmiddlewaretoken']").value;
+
+            try {
+                const response = await fetch(generateNoteForm.action, {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "X-CSRFToken": csrfToken,
+                    },
+                });
+
+                if (!response.ok) {
+                    soapNote.value = "Error generating note.";
+                    generateStatus.textContent = "Generation failed.";
+                    generateButton.disabled = false;
+                    return;
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                let buffer = "";
+
+                while (true) {
+                    const { value, done } = await reader.read();
+
+                    if (done) {
+                        break;
+                    }
+
+                    buffer += decoder.decode(value, { stream: true });
+
+                    const events = buffer.split("\n\n");
+                    buffer = events.pop();
+
+                    for (const eventText of events) {
+                        const lines = eventText.split("\n");
+                        let eventName = "message";
+                        let dataLine = "";
+
+                        for (const line of lines) {
+                            if (line.startsWith("event:")) {
+                                eventName = line.replace("event:", "").trim();
+                            }
+
+                            if (line.startsWith("data:")) {
+                                dataLine = line.replace("data:", "").trim();
+                            }
+                        }
+
+                        if (eventName === "done") {
+                            streamFinished = true;
+                            generateStatus.textContent = "Finishing display...";
+                            finishIfReady();
+                            return;
+                        }
+
+                        if (eventName === "error") {
+                            const errorData = JSON.parse(dataLine);
+                            enqueueText("\n\n[Error] " + errorData.error);
+                            streamFinished = true;
+                            generateStatus.textContent = "Generation failed.";
+                            generateButton.disabled = false;
+                            return;
+                        }
+
+                        if (dataLine) {
+                            const parsed = JSON.parse(dataLine);
+                            enqueueText(parsed.delta);
+                        }
+                    }
+                }
+
+                streamFinished = true;
+                generateStatus.textContent = "Finishing display...";
+                finishIfReady();
+            } catch (error) {
+                enqueueText("\n\n[Error] " + error.message);
+                streamFinished = true;
+                generateStatus.textContent = "Generation failed.";
+                generateButton.disabled = false;
+            }
+        });
+    }
+</script>
+
+<script>
+    const soapNoteAutosave = document.getElementById("soapNote");
+    const autosaveStatus = document.getElementById("autosaveStatus");
+    const saveNoteForm = soapNoteAutosave ? soapNoteAutosave.closest("form") : null;
+
+    let autosaveTimer = null;
+    let lastAutosavedText = soapNoteAutosave ? soapNoteAutosave.value : "";
+    let isManualSaveSubmitting = false;
+
+    function getCSRFToken() {
+        const csrfInput = document.querySelector("input[name='csrfmiddlewaretoken']");
+        return csrfInput ? csrfInput.value : "";
+    }
+
+    function setAutosaveStatus(message) {
+        if (autosaveStatus) {
+            autosaveStatus.textContent = message;
+        }
+    }
+
+    async function autosaveNoteDraft() {
+        if (!soapNoteAutosave || isManualSaveSubmitting) {
+            return;
+        }
+
+        const currentText = soapNoteAutosave.value;
+
+        if (currentText === lastAutosavedText) {
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("note_text", currentText);
+
+        setAutosaveStatus("Autosaving draft...");
+
+        try {
+            const response = await fetch("{% url 'autosave_note_draft' encounter.id %}", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": getCSRFToken(),
+                },
+            });
+
+            if (!response.ok) {
+                setAutosaveStatus("Autosave failed.");
+                return;
+            }
+
+            const data = await response.json();
+            lastAutosavedText = currentText;
+
+            const noteSaveStatus = document.getElementById("noteSaveStatus");
+            if (noteSaveStatus) {
+                noteSaveStatus.textContent = "Draft";
+                noteSaveStatus.className = "badge text-bg-warning";
+            }
+
+            if (data.saved_at) {
+                setAutosaveStatus(`Draft autosaved at ${data.saved_at}.`);
+            } else {
+                setAutosaveStatus("Draft autosaved.");
+            }
+        } catch (error) {
+            setAutosaveStatus("Autosave failed.");
+            console.error("Autosave error:", error);
+        }
+    }
+
+    function scheduleAutosave() {
+        if (!soapNoteAutosave || isManualSaveSubmitting) {
+            return;
+        }
+
+        clearTimeout(autosaveTimer);
+        setAutosaveStatus("Unsaved changes...");
+
+        autosaveTimer = setTimeout(function () {
+            autosaveNoteDraft();
+        }, 1000);
+    }
+
+    if (soapNoteAutosave) {
+        soapNoteAutosave.addEventListener("input", scheduleAutosave);
+    }
+
+    if (saveNoteForm) {
+        saveNoteForm.addEventListener("submit", function () {
+            isManualSaveSubmitting = true;
+            clearTimeout(autosaveTimer);
+            setAutosaveStatus("Saving final note version...");
+        });
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

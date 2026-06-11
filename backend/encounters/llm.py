@@ -1,7 +1,8 @@
 import os
 from openai import OpenAI
 from .models import Encounter, NoteTemplate
-
+import json
+from pathlib import Path
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -182,6 +183,14 @@ def build_prompt(encounter_id, template_id):
 
             The Assessment section must include at least one suggested ICD-10 code and description.
 
+            Format ICD-10 codes exactly like this:
+            - R50.9: Fever, unspecified
+
+            Do not bold ICD-10 codes.
+            Do not write "**ICD-10:**".
+            Do not use markdown bold anywhere in the SOAP note.
+            Do not use em dashes for ICD-10 codes.
+
             Rules:
             - Do not invent facts.
             - If information is missing, say it was not provided.
@@ -205,3 +214,78 @@ def stream_llm(encounter_id, template_id):
     for event in stream:
         if getattr(event, "type", None) == "response.output_text.delta":
             yield event.delta
+
+
+
+
+def search_code(text, top_k=5):
+
+    if not text or not text.strip():
+        return []
+
+    project_root = Path(__file__).resolve().parents[2]
+    subset_path = project_root / "icd-10" / "icd10_subset.json"
+
+    if not subset_path.exists():
+        raise FileNotFoundError(f"Could not find ICD-10 subset file: {subset_path}")
+
+    with open(subset_path, "r", encoding="utf-8") as f:
+        codes = json.load(f)
+
+    code_text = "\n".join(
+        f"{item['code']}: {item['description']}"
+        for item in codes
+    )
+
+    prompt = f"""
+            You are an ICD-10-CM search assistant.
+
+            The provider searched for:
+            {text}
+
+            Choose the top {top_k} most relevant ICD-10-CM diagnosis codes from the local list below.
+
+            Rules:
+            - Only choose codes from the provided local list.
+            - Do not invent new ICD-10 codes.
+            - Return only JSON.
+            - Do not include explanation.
+
+            Return format:
+            [
+            {{"code": "CODE", "description": "DESCRIPTION"}}
+            ]
+
+            Local ICD-10-CM list:
+            {code_text}
+            """
+
+    response = client.responses.create(
+        model="gpt-5.4-mini",
+        input=prompt,
+    )
+
+    output_text = response.output_text.strip()
+
+    try:
+        results = json.loads(output_text)
+    except json.JSONDecodeError:
+        return []
+
+    valid_codes = {
+        item["code"]: item["description"]
+        for item in codes
+    }
+
+    cleaned_results = []
+
+    for item in results:
+        code = item.get("code")
+
+        if code in valid_codes:
+            cleaned_results.append({
+                "code": code,
+                "description": valid_codes[code]
+            })
+
+    return cleaned_results[:top_k]

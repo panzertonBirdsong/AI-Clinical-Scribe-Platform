@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Encounter | AI Clinical Scribe</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fw-semibold" href="#">
+            <i class="bi bi-clipboard2-pulse me-2 text-primary"></i>
+            AI Clinical Scribe
+        </a>
+
+        <div class="d-flex align-items-center gap-3">
+            <span class="text-muted">
+                Logged in as <strong>{{ request.user.username }}</strong>
+            </span>
+
+            <a href="{% url 'logout' %}" class="btn btn-outline-secondary btn-sm">
+                Logout
+            </a>
+        </div>
+    </div>
+</nav>
+
+<main class="container py-4">
+
+    <div class="mb-4">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h1 class="fw-bold mb-1">View Encounter</h1>
+                <p class="text-muted mb-0">
+                    Read-only encounter details, raw input, and saved note history.
+                </p>
+            </div>
+
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>
+                Back to Admin Dashboard
+            </a>
+        </div>
+    </div>
+
+    {% if error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    <!-- Section 1: Encounter Summary -->
+    <section class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-bottom">
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3"
+                     style="width: 42px; height: 42px;">
+                    <i class="bi bi-person-vcard fs-5"></i>
+                </div>
+
+                <div>
+                    <h5 class="mb-0">Encounter Summary</h5>
+                    <small class="text-muted">
+                        Basic information for this patient encounter.
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label text-muted">Patient</label>
+                    <div class="form-control bg-light">
+                        {{ patient.first_name }} {{ patient.last_name }}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label text-muted">Date of Birth</label>
+                    <div class="form-control bg-light">
+                        {{ patient.date_of_birth }}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label text-muted">Provider</label>
+                    <div class="form-control bg-light">
+                        {{ provider.username }}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label text-muted">Encounter ID</label>
+                    <div class="form-control bg-light">
+                        #{{ encounter.id }}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label text-muted">Status</label>
+                    <div class="form-control bg-light">
+                        {% if encounter.status == "draft" %}
+                            <span class="badge text-bg-warning">Draft</span>
+                        {% elif encounter.status == "finalized" %}
+                            <span class="badge text-bg-success">Finalized</span>
+                        {% else %}
+                            <span class="badge text-bg-secondary">{{ encounter.status }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label text-muted">Last Updated</label>
+                    <div class="form-control bg-light">
+                        {{ encounter.updated_at }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Raw Text -->
+    <section class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-bottom">
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3"
+                     style="width: 42px; height: 42px;">
+                    <i class="bi bi-journal-text fs-5"></i>
+                </div>
+
+                <div>
+                    <h5 class="mb-0">Raw Text</h5>
+                    <small class="text-muted">
+                        Original encounter input. This view is read-only.
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            {% if encounter.raw_input %}
+                <textarea
+                    class="form-control bg-light"
+                    rows="10"
+                    readonly
+                >{{ encounter.raw_input }}</textarea>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-journal-x text-muted" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3">No raw text saved</h5>
+                    <p class="text-muted mb-0">
+                        This encounter does not have raw input yet.
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Section 3: History of Notes -->
+    <section class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3"
+                         style="width: 42px; height: 42px;">
+                        <i class="bi bi-clock-history fs-5"></i>
+                    </div>
+
+                    <div>
+                        <h5 class="mb-0">History of Notes</h5>
+                        <small class="text-muted">
+                            Saved note versions for this encounter.
+                        </small>
+                    </div>
+                </div>
+
+                <span class="badge text-bg-light">
+                    {{ note_versions|length }} total
+                </span>
+            </div>
+        </div>
+
+        <div class="card-body">
+            {% if note_versions %}
+                <div class="accordion" id="note-history-accordion">
+                    {% for note in note_versions %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="note-heading-{{ note.id }}">
+                                <button
+                                    class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#note-collapse-{{ note.id }}"
+                                    aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                                    aria-controls="note-collapse-{{ note.id }}"
+                                >
+                                    <div class="d-flex w-100 align-items-center justify-content-between me-3">
+                                        <span>
+                                            Version {{ note.version_number }}
+                                            {% if note.status == "draft" %}
+                                                <span class="badge text-bg-warning ms-2">Draft</span>
+                                            {% elif note.status == "finalized" %}
+                                                <span class="badge text-bg-success ms-2">Finalized</span>
+                                            {% else %}
+                                                <span class="badge text-bg-secondary ms-2">{{ note.status }}</span>
+                                            {% endif %}
+                                        </span>
+
+                                        <small class="text-muted">
+                                            {{ note.saved_at }}
+                                        </small>
+                                    </div>
+                                </button>
+                            </h2>
+
+                            <div
+                                id="note-collapse-{{ note.id }}"
+                                class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                                aria-labelledby="note-heading-{{ note.id }}"
+                                data-bs-parent="#note-history-accordion"
+                            >
+                                <div class="accordion-body">
+                                    <div class="mb-3">
+                                        <small class="text-muted">
+                                            Saved by:
+                                            {% if note.saved_by %}
+                                                {{ note.saved_by.username }}
+                                            {% else %}
+                                                Unknown
+                                            {% endif %}
+                                        </small>
+                                    </div>
+
+                                    <textarea
+                                        class="form-control bg-light"
+                                        rows="14"
+                                        readonly
+                                    >{{ note.note_text }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-folder2-open text-muted" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3">No note history yet</h5>
+                    <p class="text-muted mb-0">
+                        This encounter does not have any saved note versions.
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
