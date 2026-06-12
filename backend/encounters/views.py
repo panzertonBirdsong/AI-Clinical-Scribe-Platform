@@ -586,12 +586,13 @@ def admin_dashboard(request):
             template_name = request.POST.get("template_name")
             encounter_type = request.POST.get("encounter_type", "")
             prompt_text = request.POST.get("prompt_text")
+            is_active = request.POST.get("is_active") == "on"
 
             NoteTemplate.objects.create(
                 name=template_name,
                 encounter_type=encounter_type,
                 prompt_text=prompt_text,
-                is_active=True,
+                is_active=is_active,
             )
 
             return redirect_admin("templates")
