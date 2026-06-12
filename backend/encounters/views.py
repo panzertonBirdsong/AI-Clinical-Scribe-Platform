@@ -6,16 +6,46 @@ from django.http import JsonResponse
 from django.contrib.auth import authenticate, login, logout
 from django.http import StreamingHttpResponse, HttpResponseNotAllowed
 from django.contrib.auth.models import User
+from django.urls import reverse
 
+from functools import wraps
 import json
 
 from .models import UserProfile, Encounter, NoteTemplate, Patient, NoteVersion
 from .llm import call_llm, search_code
 
 
+DEACTIVATED_PROVIDER_ERROR = "This provider account has been deactivated."
+
+
+def redirect_deactivated_provider(request):
+    logout(request)
+    return redirect(f"{reverse('login')}?error=provider_deactivated")
+
+
+def valid_user_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        profile = UserProfile.objects.filter(user=request.user).first()
+
+        if profile is None:
+            logout(request)
+            return redirect("login")
+
+        if profile.role == "provider" and not profile.is_active_provider:
+            return redirect_deactivated_provider(request)
+
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
+
+
 
 def login_view(request):
     error = None
+
+    if request.GET.get("error") == "provider_deactivated":
+        error = DEACTIVATED_PROVIDER_ERROR
 
     if request.method == "POST":
         username = request.POST.get("username")
@@ -34,7 +64,7 @@ def login_view(request):
             profile = UserProfile.objects.get(user=user)
 
             if profile.role == "provider" and not profile.is_active_provider:
-                error = "This provider account has been deactivated."
+                error = DEACTIVATED_PROVIDER_ERROR
 
             else:
                 login(request, user)
@@ -55,6 +85,7 @@ def login_view(request):
 
 
 @login_required
+@valid_user_required
 def provider_workspace(request):
     error = None
 
@@ -62,9 +93,6 @@ def provider_workspace(request):
 
     if profile.role != "provider":
         return redirect("admin_dashboard")
-
-    if not profile.is_active_provider:
-        return redirect("login")
 
     if request.method == "POST":
         
@@ -150,6 +178,7 @@ def provider_workspace(request):
     
 
 @login_required
+@valid_user_required
 def save_raw_input(request, encounter_id):
     encounter = get_object_or_404(
         Encounter.objects.select_related(
@@ -185,6 +214,7 @@ def save_raw_input(request, encounter_id):
 
 
 @login_required
+@valid_user_required
 def generate_note(request, encounter_id):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
@@ -230,6 +260,7 @@ def generate_note(request, encounter_id):
 
 
 @login_required
+@valid_user_required
 @require_POST
 def save_note_version(request, encounter_id):
     encounter = get_object_or_404(
@@ -318,6 +349,7 @@ def save_note_version(request, encounter_id):
 
 
 @login_required
+@valid_user_required
 @require_POST
 def autosave_note_draft(request, encounter_id):
     encounter = get_object_or_404(
@@ -382,6 +414,8 @@ def autosave_note_draft(request, encounter_id):
 
 
 
+@login_required
+@valid_user_required
 @require_POST
 def icd10_search(request):
     user_input = request.POST.get("user_input", "").strip()
@@ -410,9 +444,8 @@ def icd10_search(request):
 
 
 @login_required
+@valid_user_required
 def admin_dashboard(request):
-    from django.urls import reverse
-
     error = None
     valid_sections = {"encounters", "providers", "templates"}
 
