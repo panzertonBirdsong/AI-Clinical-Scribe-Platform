@@ -16,6 +16,7 @@ from .llm import call_llm, search_code
 
 
 DEACTIVATED_PROVIDER_ERROR = "This provider account has been deactivated."
+SELECTED_TEMPLATE_NOT_FOUND_ERROR = "Selected Templates Not Found!"
 
 
 def redirect_deactivated_provider(request):
@@ -38,7 +39,6 @@ def valid_user_required(view_func):
         return view_func(request, *args, **kwargs)
 
     return wrapper
-
 
 
 def login_view(request):
@@ -230,9 +230,44 @@ def generate_note(request, encounter_id):
 
     template_id = request.POST.get("template_id")
 
+    template = None
+
+    if template_id:
+        try:
+            template = NoteTemplate.objects.filter(
+                id=template_id,
+                is_active=True,
+            ).first()
+        except (TypeError, ValueError):
+            template = None
+
+    if template is None:
+        note_versions = encounter.versions.all().order_by("-saved_at")
+        latest_note_version = note_versions.first()
+        note_templates = NoteTemplate.objects.filter(is_active=True).order_by("name")
+
+        return render(request, "encounter.html", {
+            "error": SELECTED_TEMPLATE_NOT_FOUND_ERROR,
+            "provider": encounter.provider,
+            "patient": encounter.patient,
+            "encounter": encounter,
+            "note_versions": note_versions,
+            "latest_note_version": latest_note_version,
+            "note_templates": note_templates,
+        })
+
+    template_name = template.name
+    template_encounter_type = template.encounter_type
+    template_prompt_text = template.prompt_text
+
     def stream_response():
         try:
-            for chunk in call_llm(encounter.id, template_id):
+            for chunk in call_llm(
+                encounter.id,
+                template_name,
+                template_encounter_type,
+                template_prompt_text,
+            ):
                 data = json.dumps({
                     "delta": chunk,
                 })
@@ -449,6 +484,9 @@ def admin_dashboard(request):
     error = None
     valid_sections = {"encounters", "providers", "templates"}
 
+    if request.GET.get("error") == "selected_template_not_found":
+        error = SELECTED_TEMPLATE_NOT_FOUND_ERROR
+
     def normalize_section(section):
         if section in valid_sections:
             return section
@@ -460,9 +498,14 @@ def admin_dashboard(request):
         request.GET.get("active_section")
     )
 
-    def redirect_admin(section=None):
+    def redirect_admin(section=None, error_code=None):
         section = normalize_section(section or active_section)
-        return redirect(f"{reverse('admin_dashboard')}?section={section}")
+        url = f"{reverse('admin_dashboard')}?section={section}"
+
+        if error_code:
+            url += f"&error={error_code}"
+
+        return redirect(url)
 
     profile = get_object_or_404(UserProfile, user=request.user)
 
@@ -563,10 +606,13 @@ def admin_dashboard(request):
             prompt_text = request.POST.get("prompt_text")
             is_active = request.POST.get("is_active") == "on"
 
-            template = get_object_or_404(
-                NoteTemplate,
-                id=template_id,
-            )
+            template = NoteTemplate.objects.filter(id=template_id).first()
+
+            if template is None:
+                return redirect_admin(
+                    "templates",
+                    "selected_template_not_found",
+                )
 
             template.name = template_name
             template.encounter_type = encounter_type
@@ -590,7 +636,14 @@ def admin_dashboard(request):
             active_section = "templates"
             template_id = request.POST.get("template_id")
 
-            template = get_object_or_404(NoteTemplate, id=template_id)
+            template = NoteTemplate.objects.filter(id=template_id).first()
+
+            if template is None:
+                return redirect_admin(
+                    "templates",
+                    "selected_template_not_found",
+                )
+
             template.is_active = not template.is_active
             template.save(update_fields=["is_active", "updated_at"])
 
@@ -601,7 +654,14 @@ def admin_dashboard(request):
             active_section = "templates"
             template_id = request.POST.get("template_id")
 
-            template = get_object_or_404(NoteTemplate, id=template_id)
+            template = NoteTemplate.objects.filter(id=template_id).first()
+
+            if template is None:
+                return redirect_admin(
+                    "templates",
+                    "selected_template_not_found",
+                )
+
             template.delete()
 
             return redirect_admin("templates")

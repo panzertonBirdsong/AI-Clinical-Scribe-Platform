@@ -1,6 +1,6 @@
 import os
 from openai import OpenAI
-from .models import Encounter, NoteTemplate
+from .models import Encounter
 import json
 from pathlib import Path
 import boto3
@@ -32,13 +32,11 @@ def get_parameter(name, default=None, with_decryption=True):
 client = OpenAI(api_key=get_parameter("/kyronmedical/OPENAI_API_KEY"))
 
 
-def call_llm(encounter_id, template_id):
+def call_llm(encounter_id, template_name, template_encounter_type, template_prompt_text):
     encounter = Encounter.objects.select_related(
         "patient",
         "provider",
     ).get(id=encounter_id)
-
-    template = NoteTemplate.objects.get(id=template_id, is_active=True)
 
     patient = encounter.patient
 
@@ -93,10 +91,10 @@ def call_llm(encounter_id, template_id):
             {previous_history}
 
             3. Specific Instruction / Prompt Template:
-            Template Name: {template.name}
-            Encounter Type: {template.encounter_type}
+            Template Name: {template_name}
+            Encounter Type: {template_encounter_type}
 
-            {template.prompt_text}
+            {template_prompt_text}
 
             4. Required Output Format:
             The output must be a SOAP note and must include all of the following sections:
@@ -133,14 +131,13 @@ def call_llm(encounter_id, template_id):
 
 
 
-def build_prompt(encounter_id, template_id):
+def build_prompt(encounter_id, template_name, template_encounter_type, template_prompt_text):
     encounter = (
         Encounter.objects
         .select_related("patient", "provider")
         .get(id=encounter_id)
     )
 
-    template = NoteTemplate.objects.get(id=template_id, is_active=True)
     patient = encounter.patient
 
     previous_encounters = (
@@ -192,10 +189,10 @@ def build_prompt(encounter_id, template_id):
             {previous_history}
 
             3. Specific Instruction / Prompt Template:
-            Template Name: {template.name}
-            Encounter Type: {template.encounter_type}
+            Template Name: {template_name}
+            Encounter Type: {template_encounter_type}
 
-            {template.prompt_text}
+            {template_prompt_text}
 
             4. Required Output Format:
 
@@ -227,8 +224,13 @@ def build_prompt(encounter_id, template_id):
 
 
 
-def stream_llm(encounter_id, template_id):
-    prompt = build_prompt(encounter_id, template_id)
+def stream_llm(encounter_id, template_name, template_encounter_type, template_prompt_text):
+    prompt = build_prompt(
+        encounter_id,
+        template_name,
+        template_encounter_type,
+        template_prompt_text,
+    )
 
     stream = client.responses.create(
         model="gpt-5.4-mini",
