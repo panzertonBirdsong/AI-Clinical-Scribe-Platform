@@ -1,6 +1,13 @@
 # AI-Clinical-Scribe-Platform
 
+## Webpage
 
-Username (leave blank to use 'pzt'): admin0
-Email address: admin0@project.com
-Password: Durham@27701
+The deployed webpage is available at:
+
+https://ai-clinical-platform.duckdns.org/
+
+## Login Notes
+
+Use the admin account to access admin-related features.
+
+Use any provider account to access provider-related features.

@@ -51,7 +51,16 @@ SECRET_KEY = get_parameter("/kyronmedical/DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "ai-clinical-platform.duckdns.org",
+    "3.85.185.247",
+    "127.0.0.1",
+    "localhost",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://ai-clinical-platform.duckdns.org",
+]
 
 
 # Application definition
